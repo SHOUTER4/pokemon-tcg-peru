@@ -50,6 +50,9 @@ jobs:
 
       - name: Escanear tiendas y cartas
         run: python scanner.py --sin-alertas --web sitio
+        env:
+          ML_CLIENT_ID: ${{ secrets.ML_CLIENT_ID }}
+          ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
 
       - name: Guardar historial (rama datos)
         run: |

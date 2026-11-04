@@ -118,7 +118,16 @@ tiendas:
     filtro: *filtro_tcg
     excluir: *excluir_tcg
 
-  # Mercado Libre bloquea su API y su web sin cuenta de desarrollador (ver README).
+  # Mercado Libre: la API pide token. Usa ML_CLIENT_ID y ML_CLIENT_SECRET de tu app de
+  # developers.mercadolibre.com.pe (variables de entorno en tu PC, secrets en GitHub).
+  - nombre: Mercado Libre
+    tipo: mercadolibre
+    url: https://www.mercadolibre.com.pe
+    buscar: [pokemon tcg]
+    max_resultados: 1000
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
   # Sodimac no tiene buscador propio con Pokémon: sus productos salen en Falabella.
   # Coolbox (VTEX) solo vende videojuegos de Pokémon, no TCG.
 

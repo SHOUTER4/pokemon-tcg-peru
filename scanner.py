@@ -329,8 +329,46 @@ def scan_ripley(t):
             time.sleep(2)
 
 
+def scan_mercadolibre(t):
+    """API de búsqueda de Mercado Libre. Sin token responde 403, así que pide uno con
+    client_credentials usando ML_CLIENT_ID y ML_CLIENT_SECRET (variables de entorno o
+    secrets de GitHub). 50 resultados por página; la API no pasa del resultado 1000."""
+    cid, secreto = os.environ.get("ML_CLIENT_ID"), os.environ.get("ML_CLIENT_SECRET")
+    if not cid or not secreto:
+        raise RuntimeError("faltan las variables ML_CLIENT_ID y ML_CLIENT_SECRET")
+    r = session.post("https://api.mercadolibre.com/oauth/token", timeout=30, data={
+        "grant_type": "client_credentials", "client_id": cid, "client_secret": secreto})
+    if not r.ok:
+        raise RuntimeError(f"Mercado Libre no entregó token (HTTP {r.status_code}): {r.text[:200]}")
+    auth = {"Authorization": f"Bearer {r.json()['access_token']}"}
+    sitio = t.get("sitio", "MPE")
+    for termino in t["buscar"]:
+        offset = 0
+        while offset < min(t.get("max_resultados", 1000), 1000):
+            r = session.get(f"https://api.mercadolibre.com/sites/{sitio}/search", timeout=30, headers=auth,
+                            params={"q": termino, "offset": offset, "limit": 50})
+            r.raise_for_status()
+            data = r.json()
+            for p in data.get("results") or []:
+                precio, normal = p.get("price"), p.get("original_price")
+                yield {
+                    "pid": p["id"],
+                    "nombre": html.unescape(p["title"]).strip(),
+                    "url": p.get("permalink") or "",
+                    "precio": float(precio) if precio else None,
+                    "precio_normal": float(normal) if normal and precio and normal > precio else None,
+                    "stock": (p.get("available_quantity") or 0) > 0,
+                    "imagen": (p.get("thumbnail") or "").replace("http://", "https://"),
+                }
+            offset += 50
+            if not data.get("results") or offset >= int((data.get("paging") or {}).get("total") or 0):
+                break
+            time.sleep(1)
+
+
 ADAPTADORES = {"woocommerce": scan_woocommerce, "shopify": scan_shopify, "magento": scan_magento,
-               "vtex": scan_vtex, "falabella": scan_falabella, "ripley": scan_ripley}
+               "vtex": scan_vtex, "falabella": scan_falabella, "ripley": scan_ripley,
+               "mercadolibre": scan_mercadolibre}
 
 
 def _grupos(lista):
