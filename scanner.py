@@ -44,9 +44,17 @@ session.headers.update({"User-Agent": UA, "Accept-Language": "es-PE,es;q=0.9"})
 
 
 def get(url, params=None, intentos=3):
-    """GET con reintentos ante 429/5xx (Shopify limita peticiones seguidas)."""
+    """GET con reintentos ante 429/5xx (Shopify limita peticiones seguidas) y ante
+    tiempos de espera o cortes de conexión (algunas tiendas a veces tardan)."""
     for i in range(intentos):
-        r = session.get(url, params=params, timeout=30)
+        try:
+            r = session.get(url, params=params, timeout=30)
+        except (requests.Timeout, requests.ConnectionError) as ex:
+            if i == intentos - 1:
+                raise
+            log.info("%s en %s, reintento en %ss", type(ex).__name__, url, 10 * (i + 1))
+            time.sleep(10 * (i + 1))
+            continue
         if (r.status_code == 429 or r.status_code >= 500) and i < intentos - 1:
             espera = int(r.headers.get("Retry-After", 0) or 0) or 10 * (i + 1)
             log.info("HTTP %s en %s, reintento en %ss", r.status_code, url, espera)
