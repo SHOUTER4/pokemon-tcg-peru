@@ -23,6 +23,8 @@ concurrency:
 jobs:
   escanear:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/Lima   # las horas del escaneo se guardan en hora de Perú, como en la app local
     environment:
       name: github-pages
       url: ${{ steps.publicar.outputs.page_url }}
