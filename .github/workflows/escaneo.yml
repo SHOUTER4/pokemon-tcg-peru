@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: "0 13 * * *"   # 8:00 a. m. hora de Perú (GitHub usa UTC; puede atrasarse unos minutos)
   workflow_dispatch:         # botón "Run workflow" para escanear cuando quieras
+  push:                      # al subir cambios de código se vuelve a publicar
+    branches: [main]
+    paths-ignore: ["README.md"]
 
 permissions:
   contents: write   # empujar la rama "datos"
