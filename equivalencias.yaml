@@ -1,0 +1,44 @@
+# Sets de Pokémon TCG para reconocer el mismo producto en distintas tiendas.
+# El escáner busca estos alias en el nombre del producto (sin tildes ni mayúsculas)
+# y agrupa los que coinciden en set + tipo de producto (+ Pokémon, si lo tiene).
+#
+# El ORDEN importa: gana el primer set que aparezca en el nombre. Por eso los sets
+# específicos van antes que los genéricos ("Mega Evolution", "Scarlet & Violet"),
+# que suelen salir como prefijo: "Mega Evolution - Perfect Order".
+#
+# Para agregar un set nuevo, copia una línea y cambia nombre y alias.
+
+sets:
+  - {nombre: "Pitch Black",            alias: [pitch black]}
+  - {nombre: "Phantasmal Flames",      alias: [phantasmal flames, llamaradas fantasmales, llamas fantasmales]}
+  - {nombre: "Ascended Heroes",        alias: [ascended heroes, heroes ascendidos]}
+  - {nombre: "Perfect Order",          alias: [perfect order, orden perfecto]}
+  - {nombre: "Chaos Rising",           alias: [chaos rising]}
+  - {nombre: "Delta Reign",            alias: [delta reign, dominio delta]}
+  - {nombre: "White Flare",            alias: [white flare, fuego blanco]}
+  - {nombre: "Black Bolt",             alias: [black bolt, rayo negro]}
+  - {nombre: "Destined Rivals",        alias: [destined rivals, rivales predestinados]}
+  - {nombre: "Journey Together",       alias: [journey together, aventuras compartidas]}
+  - {nombre: "Prismatic Evolutions",   alias: [prismatic evolution, evoluciones prismaticas]}
+  - {nombre: "Surging Sparks",         alias: [surging sparks, chispas fulgurantes]}
+  - {nombre: "Stellar Crown",          alias: [stellar crown, corona astral]}
+  - {nombre: "Shrouded Fable",         alias: [shrouded fable, fabula sombria]}
+  - {nombre: "Twilight Masquerade",    alias: [twilight masquerade, mascarada crepuscular]}
+  - {nombre: "Temporal Forces",        alias: [temporal forces, fuerzas temporales]}
+  - {nombre: "Paldean Fates",          alias: [paldean fates, destinos de paldea]}
+  - {nombre: "Paradox Rift",           alias: [paradox rift, brecha paradojica]}
+  - {nombre: "Obsidian Flames",        alias: [obsidian flames, llamas obsidianas]}
+  - {nombre: "151",                    alias: ["151"]}
+  - {nombre: "Paldea Evolved",         alias: [paldea evolved, evoluciones en paldea]}
+  - {nombre: "Crown Zenith",           alias: [crown zenith, cenit supremo]}
+  - {nombre: "Silver Tempest",         alias: [silver tempest, tempestad plateada]}
+  - {nombre: "Lost Origin",            alias: [lost origin, origen perdido]}
+  - {nombre: "Astral Radiance",        alias: [astral radiance, resplandor astral]}
+  - {nombre: "Pokémon GO",             alias: [pokemon go]}
+  - {nombre: "Brilliant Stars",        alias: [brilliant stars, astros brillantes]}
+  - {nombre: "Fusion Strike",          alias: [fusion strike, golpe fusion]}
+  - {nombre: "Evolving Skies",         alias: [evolving skies, cielos evolutivos]}
+  - {nombre: "30 Aniversario",         alias: [30th celebration, 30 aniversario, 30th anniversary]}
+  - {nombre: "Celebrations",           alias: [celebrations, celebraciones]}
+  - {nombre: "Mega Evolution",         alias: [mega evolution, megaevolucion, mega evolucion]}
+  - {nombre: "Scarlet & Violet",       alias: [scarlet and violet, scarlet violet, escarlata y purpura, escarlata y violeta]}

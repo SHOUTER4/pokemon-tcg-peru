@@ -1,0 +1,68 @@
+# Escaneo diario en GitHub: corre scanner.py, publica la versión web (sin datos
+# personales) en GitHub Pages y guarda la base de datos en la rama "datos" para
+# que el historial de precios y los cambios sigan de un día a otro.
+name: Escaneo diario
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 8:00 a. m. hora de Perú (GitHub usa UTC; puede atrasarse unos minutos)
+  workflow_dispatch:         # botón "Run workflow" para escanear cuando quieras
+
+permissions:
+  contents: write   # empujar la rama "datos"
+  pages: write
+  id-token: write
+
+concurrency:
+  group: escaneo
+  cancel-in-progress: false
+
+jobs:
+  escanear:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Recuperar historial (rama datos)
+        run: |
+          mkdir -p data
+          if git fetch --depth=1 origin datos; then
+            git show FETCH_HEAD:tcg.db > data/tcg.db
+            echo "Historial recuperado"
+          else
+            echo "Primera ejecución: sin historial"
+          fi
+
+      - name: Escanear tiendas y cartas
+        run: python scanner.py --sin-alertas --web sitio
+
+      - name: Guardar historial (rama datos)
+        run: |
+          cd "$RUNNER_TEMP"
+          rm -rf historial && mkdir historial && cd historial
+          git init -q -b datos
+          cp "$GITHUB_WORKSPACE/data/tcg.db" .
+          git add tcg.db
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Historial $(date -u +%F)"
+          # Un solo commit (force) para que el repositorio no crezca cada día.
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" datos
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sitio
+
+      - id: publicar
+        uses: actions/deploy-pages@v4

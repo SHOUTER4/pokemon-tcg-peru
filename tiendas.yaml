@@ -1,0 +1,69 @@
+# Tiendas peruanas de Pokémon TCG a escanear.
+# Tipos soportados:
+#   woocommerce -> usa la API pública /wp-json/wc/store/v1 (categorias = slugs de categoría)
+#   shopify     -> usa /collections/<handle>/products.json (colecciones = handles)
+#   magento     -> lee el HTML de las páginas de categoría (urls = páginas de listado)
+# "filtro" (opcional): solo guarda productos cuyo nombre contenga alguna de estas palabras.
+# "excluir" (opcional): descarta productos cuyo nombre contenga alguna de estas palabras.
+# "activa: false" desactiva una tienda sin borrarla.
+
+tiendas:
+  - nombre: OkamiDex
+    tipo: woocommerce
+    url: https://okamidex.pe
+    categorias: [pokemon-tcg]
+
+  - nombre: Ludus Magnus
+    tipo: woocommerce
+    url: https://ludusmagnusperu.com
+    categorias: [pokemon, preventas-pokemon]
+
+  - nombre: La Mazmorra TCG
+    tipo: woocommerce
+    url: https://lamazmorratcg.com
+    categorias: [pokemon-tcg]
+
+  - nombre: Replay Perú
+    tipo: shopify
+    url: https://replayperu.com
+    # "tcg-pokemon" quedó vacía (nov 2026); el TCG está repartido en estas colecciones.
+    # Si Shopify limita el JSON (HTTP 429), el escáner lee el HTML de la colección.
+    colecciones: [pokemon-general, tcggeneral, preventa-1, preventa-tcg, 30-aniversario-pokemon, dominio-delta-pokemon]
+    filtro: [pokemon, pokémon]
+    excluir: [funko, peluche, figura, llavero, mochila, polo, taza, cartera, loungefly, moncolle, armable, bandai]
+    pausa: 8   # segundos entre peticiones; Shopify bloquea 60 s si van muy seguidas
+
+  - nombre: Phantom
+    tipo: magento
+    url: https://phantom.pe
+    urls:
+      - https://phantom.pe/cartas-coleccionables/pokemon-trading-cards.html
+      - https://phantom.pe/coleccionables-figuras/pokemon-trading-card-game.html
+
+  # Estas dos tiendas bloquean accesos automáticos (captcha de SiteGround / Cloudflare).
+  # No se escanean; quedan aquí como referencia para revisarlas a mano.
+  - nombre: Raymi Store
+    tipo: woocommerce
+    url: https://raymistore.pe
+    categorias: [pokemon-tcg]
+    activa: false
+
+  - nombre: Dranzer Store
+    tipo: woocommerce
+    url: https://dranzerstore.com
+    categorias: [pokemon-tcg]
+    activa: false
+
+# Cartas sueltas de MasterSet que se siguen por defecto (las usa la versión web; en la app
+# local se agregan y quitan desde la pestaña Cartas).
+cartas:
+  - https://www.masterset.pe/card/a30a56fc-2d86-4f5e-8711-968af197f854  # Psyduck 175/165
+  - https://www.masterset.pe/card/a258cdff-21a1-4f57-9348-0b0d852b0c12  # Cleffa 202
+  - https://www.masterset.pe/card/a2b2b446-c873-4b9b-95e1-0c4c6e9632b2  # Bulbasaur 064/063
+  - https://www.masterset.pe/card/a295b880-fa53-42d7-9f1b-5f47faa0c49a  # Snorunt 063/062
+  - https://www.masterset.pe/card/a29b7210-1aa6-409d-b4b9-21d4584d47ef  # Milcery 110/102
+  - https://www.masterset.pe/card/a2d5ab31-ec32-4e23-bb52-dd2fc18ad85a  # Doublade 091/080
+  - https://www.masterset.pe/card/a2d59714-8fce-4bb8-b1cc-a6e97a09bdd4  # Heliolisk 201/193
+
+# Palabras que se resaltan en el reporte y en las alertas (minúsculas).
+vigilar: [151, prismatic, evoluciones prismáticas, booster box, elite trainer box, etb, 30 aniversario]

@@ -1,0 +1,7 @@
+# Datos locales: preferencias personales (favoritos, subastas), base de datos y logs.
+# La versión web guarda su historial en la rama "datos" (ver .github/workflows/escaneo.yml).
+data/
+reportes/
+sitio/
+__pycache__/
+*.pyc
