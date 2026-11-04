@@ -16,7 +16,8 @@ de precios y stock, y genera un reporte con lo que cambió.
 | Ripley (y su marketplace) | Next.js | `__NEXT_DATA__` del buscador |
 | Plaza Vea, Oechsle, Promart, Wong, Metro, Shopstar | VTEX | API pública `api/catalog_system/pub/products/search` |
 | Mercado Libre | API oficial | Desactivada: con token de app (`ML_CLIENT_ID` / `ML_CLIENT_SECRET`) la búsqueda igual responde 403 |
-| Raymi Store, Dranzer Store | — | Desactivadas: bloquean accesos automáticos (captcha / Cloudflare) |
+| Raymi Store | WooCommerce | API pública; sellados (`tcg`) y cartas sueltas y gradeadas (`cards`) |
+| Dranzer Store | — | Desactivada: bloquea accesos automáticos (Cloudflare) |
 
 Las tiendas grandes venden de todo, así que usan `filtro_tcg` / `excluir_tcg` de `tiendas.yaml`
 (Pokémon o "TCG" + una palabra de producto TCG, sin juguetes, ropa, accesorios ni otros juegos).
@@ -50,7 +51,7 @@ mientras la usas. Solo es accesible desde tu PC.
   abrir la subasta, aunque la app esté cerrada: son tareas "TCG Subasta …" del Programador de
   tareas que ejecutan `recordatorio.ps1` (la PC debe estar prendida y con tu sesión abierta).
   Facebook no deja leer publicaciones sin iniciar sesión, así que la puja actual la anotas tú.
-- **Catálogo**: todo con buscador y filtros. Al tocar un producto se ve su historial de
+- **Catálogo**: todo con buscador y filtros ("Solo gradeadas" muestra las cartas PSA, CGC, AGS…, con su nota). Al tocar un producto se ve su historial de
   precio, el precio en otras tiendas y se puede guardar en favoritos.
 - **Favoritos**: precio objetivo por producto; la app (y Telegram) avisan cuando un
   escaneo lo encuentra a ese precio o menos.

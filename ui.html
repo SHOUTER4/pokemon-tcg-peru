@@ -519,6 +519,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
         <div class="checks">
           <label class="check"><input type="checkbox" id="f-stock" checked> Solo con stock</label>
           <label class="check"><input type="checkbox" id="f-vig"> Solo mi lista</label>
+          <label class="check"><input type="checkbox" id="f-grad"> Solo gradeadas</label>
         </div>
       </div>
       <p class="result" id="result" aria-live="polite"></p>
@@ -825,6 +826,7 @@ function card(p, nuevosSet) {
   const badges = [
     nuevosSet.has(p.id) ? tag('pos', 'plus', 'Nuevo') : '',
     d >= 5 ? tag('pos', null, `-${d}%`) : '',
+    p.grad ? tag('info', 'check', p.grad) : '',
     esFav(p.id) ? tag('acc', 'star', 'Favorito') : (p.vig ? tag('acc', 'star', 'Tu lista') : ''),
   ].join('');
   return `<button type="button" class="card${p.vig ? ' vig' : ''}${p.stock ? '' : ' off'}" data-open="${esc(p.id)}" title="${esc(p.nombre)}">
@@ -969,7 +971,7 @@ $('#cmore').addEventListener('click', () => { cMostrar += CPAG; renderComprar(fa
 /* ---------------- Catálogo ---------------- */
 const POR_PAGINA = 60;
 let mostrados = POR_PAGINA, actual = [];
-const ctl = { q: $('#q'), tienda: $('#f-tienda'), orden: $('#f-orden'), stock: $('#f-stock'), vig: $('#f-vig') };
+const ctl = { q: $('#q'), tienda: $('#f-tienda'), orden: $('#f-orden'), stock: $('#f-stock'), vig: $('#f-vig'), grad: $('#f-grad') };
 function renderCatalogo(reset = true) {
   const tiendas = [...new Set(D.productos.map(p => p.tienda))].sort();
   const t0 = ctl.tienda.value;
@@ -978,7 +980,7 @@ function renderCatalogo(reset = true) {
   const palabras = norm(ctl.q.value).split(/\s+/).filter(Boolean);
   actual = D.productos.filter(p =>
     (!ctl.tienda.value || p.tienda === ctl.tienda.value) && (!ctl.stock.checked || p.stock) &&
-    (!ctl.vig.checked || p.vig) && palabras.every(w => p._q.includes(w)));
+    (!ctl.vig.checked || p.vig) && (!ctl.grad.checked || p.grad) && palabras.every(w => p._q.includes(w)));
   const precio = (p, inf) => p.precio ?? inf;
   actual.sort({
     rel: (a, b) => (b.stock - a.stock) || (b.vig - a.vig) || a.nombre.localeCompare(b.nombre),
@@ -997,7 +999,7 @@ function renderCatalogo(reset = true) {
 }
 let tq;
 ctl.q.addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(renderCatalogo, 150); });
-[ctl.tienda, ctl.orden, ctl.stock, ctl.vig].forEach(el => el.addEventListener('change', () => renderCatalogo()));
+[ctl.tienda, ctl.orden, ctl.stock, ctl.vig, ctl.grad].forEach(el => el.addEventListener('change', () => renderCatalogo()));
 $('#more').addEventListener('click', () => { mostrados += POR_PAGINA; renderCatalogo(false); });
 
 /* ---------------- Favoritos ---------------- */

@@ -553,6 +553,24 @@ IDIOMAS = [
     ("zh", r"\b(chino|chinese|china)\b"),
     ("ko", r"\b(coreano|korean|corea)\b"),
 ]
+# Cartas gradeadas: empresa + nota ("PSA 10", "CGC 9 5", "AGS 9.5", "PSA MINT 9").
+RE_GRADEADA = re.compile(r"\b(psa|cgc|bgs|beckett|sgc|tag|ags|ace|pca)\b(?: [a-z]+){0,3} (10|[1-9])(?: (5))?\b")
+
+
+def gradeada(nombre):
+    """"PSA 10", "CGC 9.5"… si el nombre es de una carta gradeada; si no, None."""
+    n = normalizar(nombre)
+    m = RE_GRADEADA.search(n)
+    if m:
+        empresa = "BGS" if m.group(1) == "beckett" else m.group(1).upper()
+        nota = f"{m.group(2)}{'.5' if m.group(3) and m.group(2) != '10' else ''}"
+        return f"{empresa} {nota}{' Pristine' if 'pristine' in m.group(0) else ''}"
+    m = re.search(r"\bgradead[ao]s?\b(?: (10|[1-9])(?: (5))?\b)?", n)
+    if m:
+        return f"Gradeada {m.group(1)}{'.5' if m.group(2) else ''}" if m.group(1) else "Gradeada"
+    return None
+
+
 RE_CAJA = re.compile(r"caja completa|\b\d{2,} unidades|\bcaja en\b|booster caja|\bdisplay\b|\b36 ct\b")
 RE_POKEMON = re.compile(r"\b((?:mega )?[a-z]+) (?:ex|v|vmax|vstar|gx)\b")
 NO_POKEMON = {"pokemon", "tcg", "box", "and", "de", "del", "the", "deck", "collection"}
@@ -583,6 +601,8 @@ def idioma_de(nombre):
 def grupo_de(nombre, sets):
     """Devuelve (clave, título legible) o (None, None) si no se puede agrupar con confianza."""
     n = f" {normalizar(nombre)} "
+    if gradeada(nombre):  # una carta gradeada no se compara con producto sellado
+        return None, None
     set_nombre = next((nom for nom, alias in sets if any(f" {a} " in n for a in alias)), None)
     tipo = next(((k, t) for k, t, patron in TIPOS if re.search(patron, n)), None)
     if not tipo:
@@ -645,7 +665,7 @@ def armar_datos(db, prefs=None, cfg=None):
             # WooCommerce devuelve 0 cuando el producto no tiene precio publicado.
             "imagen": r["imagen"], "precio": r["precio"] or None, "precio_normal": r["precio_normal"],
             "stock": bool(r["stock"]), "desde": r["primera_vez"][:10],
-            "idioma": idioma_de(r["nombre"]), "g": clave,
+            "idioma": idioma_de(r["nombre"]), "g": clave, "grad": gradeada(r["nombre"]),
         })
     ts = db.execute("SELECT MAX(ts) FROM escaneos").fetchone()[0]
     import cartas, subastas  # aquí y no arriba: ambos importan este módulo

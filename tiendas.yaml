@@ -134,13 +134,17 @@ tiendas:
   # Sodimac no tiene buscador propio con Pokémon: sus productos salen en Falabella.
   # Coolbox (VTEX) solo vende videojuegos de Pokémon, no TCG.
 
-  # Estas dos tiendas bloquean accesos automáticos (captcha de SiteGround / Cloudflare).
-  # No se escanean; quedan aquí como referencia para revisarlas a mano.
+  # Raymi Store: sellados en "tcg" y cartas sueltas y gradeadas (PSA, CGC, AGS…) en "cards".
+  # Desde nov 2026 su API vuelve a responder. Vende otros TCG, que se excluyen.
   - nombre: Raymi Store
     tipo: woocommerce
     url: https://raymistore.pe
-    categorias: [pokemon-tcg]
-    activa: false
+    categorias: [tcg, cards]
+    excluir: [lorcana, yugioh, yu gi oh, digimon, one piece, dragon ball, magic, mtg, union arena,
+              dragona, weiss, gundam, star wars, naruto]
+
+  # Esta tienda bloquea accesos automáticos (Cloudflare). No se escanea; queda aquí como
+  # referencia para revisarla a mano.
 
   - nombre: Dranzer Store
     tipo: woocommerce
