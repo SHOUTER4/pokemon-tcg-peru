@@ -13,7 +13,7 @@ sets:
   - {nombre: "Phantasmal Flames",      alias: [phantasmal flames, llamaradas fantasmales, llamas fantasmales]}
   - {nombre: "Ascended Heroes",        alias: [ascended heroes, heroes ascendidos]}
   - {nombre: "Perfect Order",          alias: [perfect order, orden perfecto]}
-  - {nombre: "Chaos Rising",           alias: [chaos rising]}
+  - {nombre: "Chaos Rising",           alias: [chaos rising, caos creciente]}
   - {nombre: "Delta Reign",            alias: [delta reign, dominio delta]}
   - {nombre: "White Flare",            alias: [white flare, fuego blanco]}
   - {nombre: "Black Bolt",             alias: [black bolt, rayo negro]}

@@ -12,7 +12,16 @@ de precios y stock, y genera un reporte con lo que cambió.
 | La Mazmorra TCG | WooCommerce | API pública `wp-json/wc/store/v1` |
 | Replay Perú | Shopify | `collections/<handle>/products.json`; si Shopify limita (429), el HTML de la colección |
 | Phantom | Magento | HTML del listado de categoría |
+| Falabella (incluye Saga, Sodimac, Tottus y su marketplace) | Next.js | `__NEXT_DATA__` del buscador |
+| Ripley (y su marketplace) | Next.js | `__NEXT_DATA__` del buscador |
+| Plaza Vea, Oechsle, Promart, Wong, Metro, Shopstar | VTEX | API pública `api/catalog_system/pub/products/search` |
+| Mercado Libre | — | No incluida: su API y su web piden cuenta de desarrollador |
 | Raymi Store, Dranzer Store | — | Desactivadas: bloquean accesos automáticos (captcha / Cloudflare) |
+
+Las tiendas grandes venden de todo, así que usan `filtro_tcg` / `excluir_tcg` de `tiendas.yaml`
+(Pokémon o "TCG" + una palabra de producto TCG, sin juguetes, ropa, accesorios ni otros juegos).
+Los marketplaces (Falabella, Ripley, Shopstar) incluyen vendedores externos: revisa quién vende
+antes de comprar, sobre todo en lotes de "cartas al azar".
 
 Agregar o quitar tiendas: editar `tiendas.yaml`. Cualquier otra tienda WooCommerce o
 Shopify funciona solo agregando su URL y categorías/colecciones.

@@ -26,6 +26,7 @@ import sys
 import time
 import unicodedata
 from pathlib import Path
+from urllib.parse import quote, urljoin
 
 import requests
 import yaml
@@ -233,20 +234,127 @@ def scan_magento(t):
         time.sleep(2)
 
 
-ADAPTADORES = {"woocommerce": scan_woocommerce, "shopify": scan_shopify, "magento": scan_magento}
+def scan_vtex(t):
+    """Tiendas VTEX (Plaza Vea, Oechsle, Promart, Coolbox, Wong, Metro, Shopstar): API
+    pública de búsqueda, de a 50 productos (VTEX no pasa de 2500 por búsqueda)."""
+    base = t["url"].rstrip("/")
+    for termino in t["buscar"]:
+        desde = 0
+        while desde < 2500:
+            # VTEX responde 400 si el espacio va como "+" (lo que hace requests): se arma a mano con %20.
+            r = get(f"{base}/api/catalog_system/pub/products/search?ft={quote(termino)}&_from={desde}&_to={desde + 49}")
+            prods = r.json()
+            for p in prods:
+                ofertas = [s.get("commertialOffer") or {} for i in p.get("items") or [] for s in i.get("sellers") or []]
+                dispo = [o for o in ofertas if o.get("IsAvailable") and o.get("Price")]
+                mejor = min(dispo, key=lambda o: o["Price"]) if dispo else (ofertas[0] if ofertas else {})
+                precio, normal = mejor.get("Price") or None, mejor.get("ListPrice") or None
+                imgs = (p.get("items") or [{}])[0].get("images") or []
+                yield {
+                    "pid": str(p["productId"]),
+                    "nombre": html.unescape(p["productName"]).strip(),
+                    "url": urljoin(base + "/", p.get("link") or f"{p.get('linkText')}/p"),
+                    "precio": precio,
+                    "precio_normal": normal if normal and precio and normal > precio else None,
+                    "stock": bool(dispo),
+                    "imagen": imgs[0]["imageUrl"] if imgs else "",
+                }
+            total = int((r.headers.get("resources") or "0-0/0").rsplit("/", 1)[-1] or 0)
+            desde += 50
+            if not prods or desde >= total:
+                break
+            time.sleep(1)
+
+
+def _next_data(texto):
+    """JSON de las páginas hechas con Next.js (Falabella, Ripley)."""
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', texto, re.S)
+    if not m:
+        raise RuntimeError("la página cambió (no trae __NEXT_DATA__)")
+    return json.loads(m.group(1))
+
+
+def scan_falabella(t):
+    """Buscador de falabella.com.pe (Saga Falabella, y en su marketplace también Sodimac,
+    Tottus y vendedores externos). 48 productos por página."""
+    base = t["url"].rstrip("/")
+    for termino in t["buscar"]:
+        for page in range(1, t.get("max_paginas", 15) + 1):
+            pp = _next_data(get(f"{base}/falabella-pe/search", {"Ntt": termino, "page": page}).text)["props"]["pageProps"]
+            for p in pp.get("results") or []:
+                precios = {x.get("type"): float(str(x["price"][0]).replace(",", ""))
+                           for x in p.get("prices") or [] if x.get("price")}
+                # cmrPrice es solo pagando con la tarjeta CMR; se usa el precio para todos.
+                precio = precios.get("eventPrice") or precios.get("internetPrice") or precios.get("normalPrice")
+                normal = precios.get("normalPrice")
+                yield {
+                    "pid": str(p["productId"]),
+                    "nombre": html.unescape(p["displayName"]).strip(),
+                    "url": p["url"],
+                    "precio": precio,
+                    "precio_normal": normal if normal and precio and normal > precio else None,
+                    "stock": True,  # el buscador solo lista productos disponibles
+                    "imagen": (p.get("mediaUrls") or [""])[0],
+                }
+            pag = pp.get("pagination") or {}
+            if page * int(pag.get("perPage") or 48) >= int(pag.get("count") or 0):
+                break
+            time.sleep(2)
+
+
+def _slug(s):
+    return re.sub(r"[^a-z0-9]+", "-", normalizar(s)).strip("-")
+
+
+def scan_ripley(t):
+    """Buscador de simple.ripley.com.pe (Ripley y su marketplace). 48 productos por página."""
+    base = t["url"].rstrip("/")
+    for termino in t["buscar"]:
+        for page in range(1, t.get("max_paginas", 15) + 1):
+            r = get(f"{base}/search/{quote(termino)}", {"page": page})
+            data = _next_data(r.text)["props"]["pageProps"]["findabilityProps"]["data"]
+            for p in data.get("products") or []:
+                precio, normal = p.get("priceNumber"), p.get("masterPriceNumber")
+                yield {
+                    "pid": p["parentProductID"],
+                    "nombre": html.unescape(p["name"]).strip(),
+                    "url": f"{base}/{_slug(p['name'])}-{p['parentProductID'].lower()}",
+                    "precio": float(precio) if precio else None,
+                    "precio_normal": float(normal) if normal and precio and normal > precio else None,
+                    "stock": bool(p.get("inStock")),
+                    "imagen": p.get("primaryImage") or "",
+                }
+            if int(data.get("offset", 0)) + int(data.get("limit", 48)) >= int(data.get("total", 0)):
+                break
+            time.sleep(2)
+
+
+ADAPTADORES = {"woocommerce": scan_woocommerce, "shopify": scan_shopify, "magento": scan_magento,
+               "vtex": scan_vtex, "falabella": scan_falabella, "ripley": scan_ripley}
+
+
+def _grupos(lista):
+    """filtro/excluir de tiendas.yaml: una lista de palabras, o una lista de listas."""
+    if not lista:
+        return []
+    grupos = lista if isinstance(lista[0], list) else [lista]
+    return [[normalizar(p) for p in g] for g in grupos]
+
+
+def _tiene(nombre, palabras):
+    # Coincide al inicio de palabra: "sobre" encuentra "sobres", pero "tin" no encuentra "martin".
+    return any(f" {p}" in nombre for p in palabras)
 
 
 def escanear_tienda(t):
-    filtro = [f.lower() for f in t.get("filtro", [])]
-    excluir = [f.lower() for f in t.get("excluir", [])]
+    # filtro: el nombre debe tener alguna palabra de CADA grupo (p. ej. "pokemon" y "booster").
+    filtro, excluir = _grupos(t.get("filtro")), [p for g in _grupos(t.get("excluir")) for p in g]
     productos = {}
     for p in ADAPTADORES[t["tipo"]](t):
-        nombre = p["nombre"].lower()
-        if filtro and not any(f in nombre for f in filtro):
+        nombre = f" {normalizar(p['nombre'])} "
+        if any(not _tiene(nombre, g) for g in filtro) or _tiene(nombre, excluir):
             continue
-        if any(f in nombre for f in excluir):
-            continue
-        productos[p["pid"]] = p  # deduplica entre categorías/colecciones
+        productos[p["pid"]] = p  # deduplica entre categorías/colecciones/búsquedas
     return list(productos.values())
 
 

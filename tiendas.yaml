@@ -3,9 +3,28 @@
 #   woocommerce -> usa la API pública /wp-json/wc/store/v1 (categorias = slugs de categoría)
 #   shopify     -> usa /collections/<handle>/products.json (colecciones = handles)
 #   magento     -> lee el HTML de las páginas de categoría (urls = páginas de listado)
+#   vtex        -> API pública de búsqueda de VTEX (buscar = términos de búsqueda)
+#   falabella   -> buscador de falabella.com.pe (buscar = términos; max_paginas de 48)
+#   ripley      -> buscador de simple.ripley.com.pe (buscar = términos; max_paginas de 48)
 # "filtro" (opcional): solo guarda productos cuyo nombre contenga alguna de estas palabras.
+#   Con una lista de listas, el nombre debe tener una palabra de CADA lista.
 # "excluir" (opcional): descarta productos cuyo nombre contenga alguna de estas palabras.
+# Las palabras se comparan sin tildes ni mayúsculas, al inicio de palabra ("sobre" = "sobres").
 # "activa: false" desactiva una tienda sin borrarla.
+
+# Filtro para tiendas grandes que venden de todo: Pokémon (o "TCG", ya que se busca
+# "pokemon tcg") + algo de TCG, sin juguetes, ropa, accesorios ni otros juegos de cartas.
+filtro_tcg: &filtro_tcg
+  - [pokemon, tcg]
+  - [tcg, booster, sobre, elite trainer, etb, blister, display, mini tin, tin, lata, coleccion,
+     collection, deck, mazo, carta, premium, bundle, battle, pack, caja]
+excluir_tcg: &excluir_tcg
+  [peluche, figura, funko, llavero, mochila, polo, taza, consola, nintendo, switch, videojuego,
+   lonchera, taper, tomatodo, disfraz, pijama, lego, construx, cartuchera, audifono, cuaderno,
+   album cartas, album para, album pokemon, pocket, folios, ultra pro, portafolio, folder, carpeta, toploader, deck box, playmat, tapete,
+   magic, mtg, yugioh, yu gi oh, one piece, digimon, lorcana, dragon ball, union arena, lampara, reloj, gorra, casaca, zapatilla, sandalia, toalla, manta, cojin, pinata,
+   globo, vaso, plato, termo, mouse, alfombra, fundas, micas, protector, sleeves, replica, proxy,
+   doradas, metalicas, generica, juguete, pistola, lanzador, pokebola, poke ball]
 
 tiendas:
   - nombre: OkamiDex
@@ -39,6 +58,69 @@ tiendas:
     urls:
       - https://phantom.pe/cartas-coleccionables/pokemon-trading-cards.html
       - https://phantom.pe/coleccionables-figuras/pokemon-trading-card-game.html
+
+  # Tiendas por departamento y supermercados (venden de todo: se filtra solo el TCG).
+  - nombre: Falabella
+    tipo: falabella
+    url: https://www.falabella.com.pe
+    buscar: [pokemon tcg]   # incluye Saga, Sodimac, Tottus y vendedores del marketplace
+    max_paginas: 13
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Ripley
+    tipo: ripley
+    url: https://simple.ripley.com.pe
+    buscar: [pokemon tcg]
+    max_paginas: 10
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Plaza Vea
+    tipo: vtex
+    url: https://www.plazavea.com.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Oechsle
+    tipo: vtex
+    url: https://www.oechsle.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Promart
+    tipo: vtex
+    url: https://www.promart.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Wong
+    tipo: vtex
+    url: https://www.wong.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Metro
+    tipo: vtex
+    url: https://www.metro.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  - nombre: Shopstar
+    tipo: vtex
+    url: https://shopstar.pe
+    buscar: [pokemon tcg]
+    filtro: *filtro_tcg
+    excluir: *excluir_tcg
+
+  # Mercado Libre bloquea su API y su web sin cuenta de desarrollador (ver README).
+  # Sodimac no tiene buscador propio con Pokémon: sus productos salen en Falabella.
+  # Coolbox (VTEX) solo vende videojuegos de Pokémon, no TCG.
 
   # Estas dos tiendas bloquean accesos automáticos (captcha de SiteGround / Cloudflare).
   # No se escanean; quedan aquí como referencia para revisarlas a mano.
