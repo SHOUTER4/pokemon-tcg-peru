@@ -368,9 +368,66 @@ def scan_mercadolibre(t):
             time.sleep(1)
 
 
+def scan_ebay(t):
+    """API oficial de eBay (Browse API) con un token de aplicación (EBAY_CLIENT_ID y
+    EBAY_CLIENT_SECRET, de developer.ebay.com). Solo "Cómpralo ya" con envío GRATIS a Perú
+    (deliveryCountry:PE + maxDeliveryCost:0) y de vendedores con buena reputación. Los
+    precios vienen en dólares y se pasan a soles con el tipo de cambio del día."""
+    cid, secreto = os.environ.get("EBAY_CLIENT_ID", "").strip(), os.environ.get("EBAY_CLIENT_SECRET", "").strip()
+    faltan = [n for n, v in (("EBAY_CLIENT_ID", cid), ("EBAY_CLIENT_SECRET", secreto)) if not v]
+    if faltan:
+        raise RuntimeError(f"falta {' y '.join(faltan)} (o está vacía)")
+    r = session.post("https://api.ebay.com/identity/v1/oauth2/token", auth=(cid, secreto), timeout=30,
+                     data={"grant_type": "client_credentials", "scope": "https://api.ebay.com/oauth/api_scope"})
+    if not r.ok:
+        raise RuntimeError(f"eBay no entregó token (HTTP {r.status_code}): {r.text[:200]}")
+    cabeceras = {"Authorization": f"Bearer {r.json()['access_token']}", "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+                 "X-EBAY-C-ENDUSERCTX": "contextualLocation=country=PE"}
+    import cartas  # aquí y no arriba: cartas importa este módulo
+    usd_pen = cartas.tipo_cambio(abrir_db())
+    filtro = "deliveryCountry:PE,maxDeliveryCost:0,buyingOptions:{FIXED_PRICE},priceCurrency:USD"
+    if t.get("precio_max_usd"):
+        filtro += f",price:[..{t['precio_max_usd']}]"
+    rep_min, votos_min = t.get("reputacion_min", 98), t.get("votos_min", 100)
+    for termino in t["buscar"]:
+        offset = 0
+        while offset < t.get("max_resultados", 400):
+            params = {"q": termino, "filter": filtro, "limit": 200, "offset": offset}
+            if t.get("categoria"):
+                params["category_ids"] = t["categoria"]
+            if t.get("aspectos"):
+                params["aspect_filter"] = f"categoryId:{t['categoria']},{t['aspectos']}"
+            r = session.get("https://api.ebay.com/buy/browse/v1/item_summary/search", params=params,
+                            headers=cabeceras, timeout=30)
+            r.raise_for_status()
+            data = r.json()
+            for p in data.get("itemSummaries") or []:
+                vendedor = p.get("seller") or {}
+                if float(vendedor.get("feedbackPercentage") or 0) < rep_min or int(vendedor.get("feedbackScore") or 0) < votos_min:
+                    continue
+                envio = [float((o.get("shippingCost") or {}).get("value") or 0) for o in p.get("shippingOptions") or []]
+                if envio and min(envio) > 0:
+                    continue
+                usd = float((p.get("price") or {}).get("value") or 0) or None
+                antes = float(((p.get("marketingPrice") or {}).get("originalPrice") or {}).get("value") or 0) or None
+                yield {
+                    "pid": p["itemId"],
+                    "nombre": html.unescape(p["title"]).strip(),
+                    "url": p.get("itemWebUrl") or "",
+                    "precio": round(usd * usd_pen, 2) if usd else None,
+                    "precio_normal": round(antes * usd_pen, 2) if antes and usd and antes > usd else None,
+                    "stock": True,
+                    "imagen": (p.get("image") or {}).get("imageUrl") or "",
+                }
+            offset += 200
+            if not data.get("itemSummaries") or offset >= int(data.get("total") or 0):
+                break
+            time.sleep(1)
+
+
 ADAPTADORES = {"woocommerce": scan_woocommerce, "shopify": scan_shopify, "magento": scan_magento,
                "vtex": scan_vtex, "falabella": scan_falabella, "ripley": scan_ripley,
-               "mercadolibre": scan_mercadolibre}
+               "mercadolibre": scan_mercadolibre, "ebay": scan_ebay}
 
 
 def _grupos(lista):
@@ -393,6 +450,8 @@ def escanear_tienda(t):
     for p in ADAPTADORES[t["tipo"]](t):
         nombre = f" {normalizar(p['nombre'])} "
         if any(not _tiene(nombre, g) for g in filtro) or _tiene(nombre, excluir):
+            continue
+        if t.get("solo_gradeadas") and not gradeada(p["nombre"]):
             continue
         productos[p["pid"]] = p  # deduplica entre categorías/colecciones/búsquedas
     return list(productos.values())

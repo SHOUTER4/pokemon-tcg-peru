@@ -131,6 +131,29 @@ tiendas:
     excluir: *excluir_tcg
     activa: false
 
+  # eBay (EE. UU.): API oficial con EBAY_CLIENT_ID y EBAY_CLIENT_SECRET de developer.ebay.com.
+  # Solo cartas Pokémon GRADEADAS, "Cómpralo ya", con envío GRATIS a Perú y vendedores con
+  # 98%+ de reputación y 100+ votos. Hasta US$ 200: en Perú las compras por courier de hasta
+  # US$ 200 no pagan impuestos de importación. Poner "activa: true" cuando estén las claves.
+  - nombre: eBay (envío gratis)
+    tipo: ebay
+    url: https://www.ebay.com
+    buscar: [pokemon psa, pokemon cgc, pokemon bgs, pokemon graded card]
+    categoria: 183454                       # CCG Individual Cards
+    aspectos: "Graded:{Yes},Game:{Pokémon TCG}"
+    precio_max_usd: 200
+    max_resultados: 400                     # por término de búsqueda
+    reputacion_min: 98
+    votos_min: 100
+    solo_gradeadas: true
+    excluir: [proxy, custom, replica, reprint, fake, orica, fan art, unofficial, metal, gold card,
+              lorcana, yugioh, yu gi oh, one piece, magic, mtg, dragon ball, digimon]
+    activa: false
+
+  # Amazon y AliExpress no se escanean: sus webs bloquean lecturas automáticas (captcha) y sus
+  # APIs piden cuenta de afiliado. En AliExpress casi todas las cartas y slabs "Pokémon" son
+  # falsificaciones o proxies, y no hay filtro fiable de vendedor original.
+
   # Sodimac no tiene buscador propio con Pokémon: sus productos salen en Falabella.
   # Coolbox (VTEX) solo vende videojuegos de Pokémon, no TCG.
 

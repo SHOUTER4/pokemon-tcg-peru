@@ -53,6 +53,8 @@ jobs:
         env:
           ML_CLIENT_ID: ${{ secrets.ML_CLIENT_ID }}
           ML_CLIENT_SECRET: ${{ secrets.ML_CLIENT_SECRET }}
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
 
       - name: Guardar historial (rama datos)
         run: |
