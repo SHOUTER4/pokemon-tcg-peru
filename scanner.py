@@ -334,8 +334,10 @@ def scan_mercadolibre(t):
     client_credentials usando ML_CLIENT_ID y ML_CLIENT_SECRET (variables de entorno o
     secrets de GitHub). 50 resultados por página; la API no pasa del resultado 1000."""
     cid, secreto = os.environ.get("ML_CLIENT_ID"), os.environ.get("ML_CLIENT_SECRET")
-    if not cid or not secreto:
-        raise RuntimeError("faltan las variables ML_CLIENT_ID y ML_CLIENT_SECRET")
+    faltan = [n for n, v in (("ML_CLIENT_ID", cid), ("ML_CLIENT_SECRET", secreto)) if not (v or "").strip()]
+    if faltan:
+        raise RuntimeError(f"falta {' y '.join(faltan)} (o está vacía)")
+    cid, secreto = cid.strip(), secreto.strip()
     r = session.post("https://api.mercadolibre.com/oauth/token", timeout=30, data={
         "grant_type": "client_credentials", "client_id": cid, "client_secret": secreto})
     if not r.ok:
