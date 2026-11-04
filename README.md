@@ -15,7 +15,7 @@ de precios y stock, y genera un reporte con lo que cambió.
 | Falabella (incluye Saga, Sodimac, Tottus y su marketplace) | Next.js | `__NEXT_DATA__` del buscador |
 | Ripley (y su marketplace) | Next.js | `__NEXT_DATA__` del buscador |
 | Plaza Vea, Oechsle, Promart, Wong, Metro, Shopstar | VTEX | API pública `api/catalog_system/pub/products/search` |
-| Mercado Libre | — | No incluida: su API y su web piden cuenta de desarrollador |
+| Mercado Libre | API oficial | Desactivada: con token de app (`ML_CLIENT_ID` / `ML_CLIENT_SECRET`) la búsqueda igual responde 403 |
 | Raymi Store, Dranzer Store | — | Desactivadas: bloquean accesos automáticos (captcha / Cloudflare) |
 
 Las tiendas grandes venden de todo, así que usan `filtro_tcg` / `excluir_tcg` de `tiendas.yaml`
@@ -93,8 +93,12 @@ El primer escaneo de cada tienda solo crea la base; los cambios aparecen desde e
 publica la página en GitHub Pages. Para escanear al momento: pestaña **Actions** del repositorio →
 *Escaneo diario* → **Run workflow**.
 
-- La página es pública y **no lleva datos personales**: sin subastas, ajustes ni precios objetivo
-  (`scanner.py --web` usa `datos_publicos`). Los favoritos que marques ahí quedan solo en tu navegador.
+- La página es pública y **no lleva datos personales**: sin ajustes, precios objetivo ni tu máximo
+  en subastas (`scanner.py --web` usa `datos_publicos`). Los favoritos que marques ahí quedan solo en tu navegador.
+- **Subastas en la web**: cada vez que guardas una subasta o anotas una puja en la app, se publica
+  `subastas.json` (sin tu máximo ni avisos) en la rama `subastas` usando tu sesión del `gh` CLI. La página
+  lo lee al abrirse y cada 2 minutos, con la cuenta regresiva y el historial de pujas. No es en tiempo real:
+  la puja es la última que anotaste (Facebook no deja leerla automáticamente).
 - Sigue las cartas listadas en `cartas:` de `tiendas.yaml`.
 - El historial de precios vive en la rama `datos` (un solo commit con `tcg.db`).
 - `data/` y `reportes/` no se suben (ver `.gitignore`).

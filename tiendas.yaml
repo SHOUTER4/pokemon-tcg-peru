@@ -120,6 +120,8 @@ tiendas:
 
   # Mercado Libre: la API pide token. Usa ML_CLIENT_ID y ML_CLIENT_SECRET de tu app de
   # developers.mercadolibre.com.pe (variables de entorno en tu PC, secrets en GitHub).
+  # Nov 2026: el token se obtiene bien, pero /sites/MPE/search responde 403 igual (Mercado
+  # Libre cerró la búsqueda a apps). Queda desactivada; probar "activa: true" si la reabren.
   - nombre: Mercado Libre
     tipo: mercadolibre
     url: https://www.mercadolibre.com.pe
@@ -127,6 +129,7 @@ tiendas:
     max_resultados: 1000
     filtro: *filtro_tcg
     excluir: *excluir_tcg
+    activa: false
 
   # Sodimac no tiene buscador propio con Pokémon: sus productos salen en Falabella.
   # Coolbox (VTEX) solo vende videojuegos de Pokémon, no TCG.

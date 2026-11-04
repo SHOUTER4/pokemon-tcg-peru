@@ -4,11 +4,18 @@ Facebook no deja leer publicaciones sin iniciar sesión, así que el link, la ho
 cierre y la puja actual los anotas tú en la app. La app guarda el valor de la carta
 en TCGplayer para decirte hasta cuánto conviene pujar, y programa avisos en Windows
 (tareas "TCG Subasta …" que muestran recordatorio.ps1 con sonido) aunque la app esté cerrada.
+
+Cada cambio se publica (sin tu máximo) en subastas.json de la rama "subastas" del
+repositorio, que la versión web lee al abrirse y cada 2 minutos.
 """
+import base64
 import datetime as dt
+import json
 import os
 import re
+import shutil
 import subprocess
+import threading
 import unicodedata
 import uuid
 
@@ -20,6 +27,9 @@ RE_TCG = re.compile(r"tcgplayer\.com/(?:[a-z-]+/)?product/(\d+)", re.I)
 AVISOS = (60, 30, 10, 3)        # minutos antes del cierre que se pueden elegir
 TOPE = 0.8                      # pujar hasta 80% del mercado sigue siendo buena compra
 PREFIJO_TAREA = "TCG Subasta"
+RAMA_WEB = "subastas"           # rama de GitHub con subastas.json, que lee la versión web
+CAMPOS_PUBLICOS = ("id", "titulo", "url", "cierre", "puja_actual", "pujas", "resultado", "tcg_nombre",
+                   "tcg_set", "tcg_url", "mercado_usd", "mercado_pen", "imagen")  # nunca mi_maximo
 
 
 def buscar_tcgplayer(q, cuantos=12):
@@ -66,6 +76,14 @@ def referencia(db, tcg_id):
             "ref_ts": dt.datetime.now().isoformat(timespec="seconds")}
 
 
+def _anotar_puja(s, monto, cuando=None):
+    """Agrega la puja al historial de la subasta si cambió (máximo 60 anotaciones)."""
+    if monto and monto != s.get("puja_actual"):
+        s.setdefault("pujas", []).append({"ts": cuando or dt.datetime.now().isoformat(timespec="seconds"),
+                                          "monto": monto})
+        del s["pujas"][:-60]
+
+
 def _num(x):
     try:
         v = float(x)
@@ -90,6 +108,7 @@ def guardar(db, prefs, datos):
         if len(subastas) >= 100:
             raise ValueError("Máximo 100 subastas: quita alguna cerrada")
         sid = uuid.uuid4().hex[:8]
+    _anotar_puja(previa, _num(datos.get("puja_actual")))
     s = {**previa, "id": sid, "url": url, "cierre": cierre.isoformat(timespec="seconds"),
          "titulo": str(datos.get("titulo", "")).strip()[:120] or previa.get("titulo") or "Subasta",
          "puja_actual": _num(datos.get("puja_actual")), "mi_maximo": _num(datos.get("mi_maximo")),
@@ -110,6 +129,7 @@ def guardar(db, prefs, datos):
     subastas[sid] = s
     guardar_prefs(prefs)
     s["avisos_programados"] = programar_avisos(s)
+    publicar(prefs)
     return s
 
 
@@ -119,17 +139,20 @@ def marcar(prefs, sid, **cambios):
     if not s:
         raise ValueError("Esa subasta ya no existe")
     if "puja_actual" in cambios:
+        _anotar_puja(s, _num(cambios["puja_actual"]))
         s["puja_actual"] = _num(cambios["puja_actual"])
     if "resultado" in cambios:
         s["resultado"] = cambios["resultado"] if cambios["resultado"] in ("ganada", "perdida") else None
     guardar_prefs(prefs)
     programar_avisos(s)  # el texto del aviso lleva la puja actual
+    publicar(prefs)
     return s
 
 
 def quitar(prefs, sid):
     prefs.get("subastas", {}).pop(sid, None)
     guardar_prefs(prefs)
+    publicar(prefs)
     _powershell(f"Get-ScheduledTask -TaskName '{PREFIJO_TAREA} {sid} *' -ErrorAction SilentlyContinue | "
                 "Unregister-ScheduledTask -Confirm:$false")
 
@@ -199,3 +222,71 @@ def datos_subastas(prefs):
         tope = round(s["mercado_pen"] * TOPE) if s.get("mercado_pen") else None
         out.append({**s, "avisos_pendientes": pendientes, "tope": tope})
     return sorted(out, key=lambda s: (bool(s.get("resultado")) or s["cierre"] < ahora.isoformat(), s["cierre"]))
+
+
+# --------------------------------------------------------------------------
+# Versión web: subastas.json en la rama "subastas" del repositorio
+# --------------------------------------------------------------------------
+
+def publicas(prefs):
+    """Subastas sin datos personales (sin tu máximo ni tus avisos). Las cerradas hace más
+    de 3 días ya no se publican."""
+    limite = (dt.datetime.now() - dt.timedelta(days=3)).isoformat()
+    return [{**{k: s.get(k) for k in CAMPOS_PUBLICOS}, "tope": s["tope"]}
+            for s in datos_subastas(prefs) if s["cierre"] >= limite]
+
+
+def _repo():
+    r = subprocess.run(["git", "-C", str(BASE), "remote", "get-url", "origin"], capture_output=True, text=True)
+    m = re.search(r"github\.com[:/]([^/]+/[^/.]+)", r.stdout)
+    return m.group(1) if m else None
+
+
+_lock = threading.Lock()
+
+
+def _gh(*args, entrada=None):
+    r = subprocess.run(["gh", "api", *args], input=entrada, capture_output=True, text=True, timeout=60,
+                       encoding="utf-8", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    if r.returncode != 0:
+        raise RuntimeError(r.stderr.strip()[:300] or r.stdout.strip()[:300])
+    return json.loads(r.stdout or "null")
+
+
+def _subir(contenido):
+    """Deja subastas.json como único archivo de la rama (un commit sin historial)."""
+    with _lock:
+        repo = _repo()
+        if not repo:
+            raise RuntimeError("no encuentro el repositorio de GitHub (git remote origin)")
+        arbol = _gh("-X", "POST", f"repos/{repo}/git/trees", "--input", "-", entrada=json.dumps(
+            {"tree": [{"path": "subastas.json", "mode": "100644", "type": "blob", "content": contenido}]}))
+        commit = _gh("-X", "POST", f"repos/{repo}/git/commits", "--input", "-", entrada=json.dumps(
+            {"message": "Actualizar subastas", "tree": arbol["sha"]}))
+        try:
+            _gh("-X", "PATCH", f"repos/{repo}/git/refs/heads/{RAMA_WEB}", "--input", "-",
+                entrada=json.dumps({"sha": commit["sha"], "force": True}))
+        except RuntimeError:  # la rama todavía no existe
+            _gh("-X", "POST", f"repos/{repo}/git/refs", "--input", "-",
+                entrada=json.dumps({"ref": f"refs/heads/{RAMA_WEB}", "sha": commit["sha"]}))
+
+
+def publicar(prefs, esperar=False):
+    """Publica las subastas para la versión web (en segundo plano). Usa el gh CLI con tu sesión
+    de GitHub; si no está, no hace nada. En GitHub Actions no corre."""
+    if os.environ.get("GITHUB_ACTIONS") or not shutil.which("gh"):
+        return
+    contenido = json.dumps({"actualizado": dt.datetime.now().isoformat(timespec="seconds"),
+                            "subastas": publicas(prefs)}, ensure_ascii=False, indent=1)
+
+    def tarea():
+        try:
+            _subir(contenido)
+            log.info("Subastas publicadas en la web")
+        except Exception as ex:  # noqa: BLE001 - publicar nunca debe romper la app
+            log.warning("No se pudieron publicar las subastas: %s", ex)
+
+    hilo = threading.Thread(target=tarea, daemon=True)
+    hilo.start()
+    if esperar:
+        hilo.join(90)

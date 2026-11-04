@@ -691,9 +691,10 @@ def pagina_ui(datos, modo):
 
 
 def datos_publicos(datos):
-    """Copia de los datos sin lo personal (favoritos, subastas, precios objetivo) para la web."""
+    """Copia de los datos sin lo personal (favoritos, subastas, precios objetivo) para la web.
+    Las subastas las lee la página en vivo desde la rama "subastas" del repositorio ("repo")."""
     prefs = datos["prefs"]
-    return {**datos, "telegram": False, "subastas": [],
+    return {**datos, "telegram": False, "subastas": [], "repo": os.environ.get("GITHUB_REPOSITORY"),
             "cartas": [{**c, "objetivo": None} for c in datos["cartas"]],
             "prefs": {"vigilar": prefs.get("vigilar", []), "favoritos": {}, "pausadas": [],
                       "cartas": {}, "subastas": {}}}

@@ -458,7 +458,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
   <section class="view" data-view="subastas" aria-labelledby="t-subastas" hidden>
     <div>
       <h2 id="t-subastas" tabindex="-1">Subastas</h2>
-      <p class="lead">Anota las subastas en las que participas (Facebook, grupos, etc.). Antes del cierre te avisamos con sonido y una ventana en Windows, aunque la app esté cerrada, y te decimos hasta cuánto conviene pujar según TCGplayer.</p>
+      <p class="lead" id="sub-lead">Anota las subastas en las que participas (Facebook, grupos, etc.). Antes del cierre te avisamos con sonido y una ventana en Windows, aunque la app esté cerrada, y te decimos hasta cuánto conviene pujar según TCGplayer.</p>
     </div>
     <form class="panel sub-form" id="sub-form" novalidate>
       <h3 id="sub-form-title">Nueva subasta</h3>
@@ -494,7 +494,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
       </div>
     </form>
     <div>
-      <h3>Mis subastas <span class="count" id="sub-count"></span></h3>
+      <h3 id="sub-h3">Mis subastas <span class="count" id="sub-count"></span></h3>
       <div class="cartas" id="sub-list"></div>
     </div>
   </section>
@@ -576,7 +576,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
 (() => {
 const MODO = document.getElementById('modo').textContent.trim();
 const APP = MODO === 'app';
-const WEB = MODO === 'web';   // versión pública en GitHub Pages (como "estatico", sin subastas ni ajustes)
+const WEB = MODO === 'web';   // versión pública en GitHub Pages (como "estatico", sin ajustes; subastas sin tu máximo)
 const $ = s => document.querySelector(s);
 const PEN = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' });
 const soles = x => x == null ? '—' : PEN.format(x);
@@ -668,6 +668,22 @@ async function cargar() {
   }
   preparar();
   renderTodo();
+  if (WEB && D.repo) { cargarSubastasWeb(); setInterval(cargarSubastasWeb, 120e3); }
+}
+// Versión web: las subastas (sin datos personales) vienen de subastas.json en la rama
+// "subastas", que la app publica cada vez que anotas una puja. Se leen con la API de GitHub
+// porque se actualiza al minuto (raw.githubusercontent tarda hasta 5).
+let SUB_WEB_TS = null;
+async function cargarSubastasWeb() {
+  if (document.hidden && SUB_WEB_TS) return;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${D.repo}/contents/subastas.json?ref=subastas`,
+      { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    SUB_WEB_TS = j.actualizado; D.subastas = j.subastas || [];
+    renderCabecera(); renderResumen(); renderSubastas();
+  } catch (_) { /* sin conexión o límite de la API: se reintenta en 2 min */ }
 }
 function preparar() {
   POR_ID.clear(); GRUPOS.clear();
@@ -729,7 +745,7 @@ function comparaciones(idioma = 'todos') {
 const VISTAS = [
   ['resumen', 'Resumen', 'home'], ['comprar', 'Dónde comprar', 'scale'], ['cartas', 'Cartas', 'layers'], ['subastas', 'Subastas', 'gavel'], ['catalogo', 'Catálogo', 'grid'],
   ['favoritos', 'Favoritos', 'star'], ['ajustes', 'Ajustes', 'gear'],
-].filter(([id]) => !WEB || !['subastas', 'ajustes'].includes(id));  // la web pública no tiene datos personales
+].filter(([id]) => !WEB || id !== 'ajustes');  // la web pública no tiene datos personales
 function renderCabecera() {
   const okT = D.tiendas.filter(t => t.ok).length;
   $('#sub').textContent = D.ts ? `Último escaneo: ${fechaLarga(D.ts)} · ${D.productos.length} productos · ${okT} tiendas OK` : 'Todavía no hay escaneos';
@@ -1145,6 +1161,16 @@ function consejo(s) {
   if (r <= 1.1) return ['info', `Ya está cerca del valor de mercado (${pc}%). Sube solo si la quieres sí o sí.`];
   return ['neg', `Ya supera el valor de mercado (${pc}%): en TCGplayer sale más barata.`];
 }
+function hace(iso) {
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  return m < 1 ? 'recién' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`;
+}
+function historialPujas(s) {
+  const p = s.pujas || [];
+  if (!p.length) return '';
+  const ult = p[p.length - 1];
+  return `<p class="hint" style="margin:6px 0 0;font-size:13px">${icon('gavel')} Pujas: <span class="num">${p.slice(-8).map(x => soles(x.monto)).join(' → ')}</span> · última ${esc(hace(ult.ts))}</p>`;
+}
 function subastaCard(s) {
   const ms = restante(s), cerrada = ms <= 0 || !!s.resultado, urg = !cerrada && ms < 15 * 60e3;
   const [tone, txt] = consejo(s);
@@ -1170,7 +1196,8 @@ function subastaCard(s) {
           ${s.tope ? ` · <span style="color:var(--pos)">▮</span> tope ${soles(s.tope)}` : ''}${s.mi_maximo ? ` · <span style="color:var(--accent)">▮</span> tu máximo ${soles(s.mi_maximo)}` : ''}</div>
       </div>
       <p class="meta" style="margin-top:6px">${tag(tone, tone === 'pos' ? 'down' : tone === 'neg' ? 'alert' : 'scale', tone === 'pos' ? 'Conviene' : tone === 'neg' ? 'Cara' : 'Ojo')}<span>${esc(txt)}</span></p>
-      ${cerrada ? '' : `<p class="hint" style="margin:6px 0 0;font-size:13px">${icon('bell')} ${s.avisos_pendientes?.length
+      ${historialPujas(s)}
+      ${cerrada || !APP ? '' : `<p class="hint" style="margin:6px 0 0;font-size:13px">${icon('bell')} ${s.avisos_pendientes?.length
         ? `Avisos en Windows: ${s.avisos_pendientes.map(horaCorta).join(', ')}` : 'Sin avisos pendientes'}</p>`}
     </div>
     ${APP ? `<div class="acts">
@@ -1188,10 +1215,14 @@ function subastaCard(s) {
 }
 function renderSubastas() {
   $('#sub-form').hidden = !APP;
+  if (WEB) {
+    $('#sub-lead').textContent = 'Subastas que estoy siguiendo (Facebook, grupos…). La puja se actualiza cuando la anoto, no en tiempo real: ábrela para ver lo último.';
+    $('#sub-h3').firstChild.textContent = 'Subastas ';
+  }
   const n = activas().length;
   $('#sub-count').textContent = D.subastas.length ? `(${n} activa${n === 1 ? '' : 's'})` : '';
   $('#sub-list').innerHTML = D.subastas.length ? D.subastas.map(subastaCard).join('')
-    : `<div class="empty">${icon('gavel')}<strong>No tienes subastas anotadas</strong>${APP ? 'Pega arriba el link de la subasta, la hora de cierre y la carta.' : 'Abre la app para anotar subastas.'}</div>`;
+    : `<div class="empty">${icon('gavel')}<strong>${WEB ? 'No hay subastas por ahora' : 'No tienes subastas anotadas'}</strong>${APP ? 'Pega arriba el link de la subasta, la hora de cierre y la carta.' : WEB ? (SUB_WEB_TS ? '' : 'Cargando…') : 'Abre la app para anotar subastas.'}</div>`;
 }
 // Cuenta regresiva en vivo; vuelve a dibujar cuando una subasta cierra y avisa en la página a 10 y 3 min.
 const avisadoEnPagina = new Set();
