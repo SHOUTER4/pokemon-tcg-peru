@@ -78,7 +78,8 @@ def referencia(db, tcg_id):
 
 def _anotar_puja(s, monto, cuando=None):
     """Agrega la puja al historial de la subasta si cambió (máximo 60 anotaciones)."""
-    if monto and monto != s.get("puja_actual"):
+    pujas = s.get("pujas") or []
+    if monto and monto != s.get("puja_actual") and (not pujas or pujas[-1]["monto"] != monto):
         s.setdefault("pujas", []).append({"ts": cuando or dt.datetime.now().isoformat(timespec="seconds"),
                                           "monto": monto})
         del s["pujas"][:-60]
