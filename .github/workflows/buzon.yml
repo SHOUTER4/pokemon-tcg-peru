@@ -30,8 +30,8 @@ jobs:
       # El título va por variable de entorno, nunca pegado en el script (evita inyección).
       TITULO: ${{ github.event.issue.title }}
       NUMERO: ${{ github.event.issue.number }}
-      RESPUESTA: ${{ runner.temp }}/respuesta.md
-      BUSQUEDAS: ${{ runner.temp }}/busquedas.json
+      RESPUESTA: /tmp/buzon/respuesta.md
+      BUSQUEDAS: /tmp/buzon/busquedas.json
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +44,7 @@ jobs:
 
       - name: Recuperar búsquedas anteriores
         run: |
+          mkdir -p /tmp/buzon
           if git fetch --depth=1 origin busquedas; then
             git show FETCH_HEAD:busquedas.json > "$BUSQUEDAS" || true
           fi
