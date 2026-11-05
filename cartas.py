@@ -114,17 +114,17 @@ def _mismo_nombre(base, nombre):
     return re.search(rf"(^| ){re.escape(normalizar(base))}( |$)", normalizar(nombre)) is not None
 
 
-def _cartas_woocommerce(t, base, numero, total, idioma):
+def _cartas_woocommerce(t, base, numero, totales, idioma):
     from scanner import normalizar
     r = get(t["url"].rstrip("/") + "/wp-json/wc/store/v1/products", {"search": base, "per_page": 100}, intentos=2)
     pref, num = numero
-    patron = rf"(^| ){pref}0*{num}" + (rf" {total[0]}0*{total[1]}( |$)" if total else r"( |$)")
+    patron = rf"(^| ){pref}0*{num}" + (rf" [a-z]*0*({'|'.join(map(str, totales))})( |$)" if totales else r"( |$)")
     for p in r.json():
         nombre = html.unescape(p.get("name") or "")
         n = normalizar(nombre)
         if not _mismo_nombre(base, nombre) or not re.search(patron, n):
             continue
-        if total is None and not re.search(rf"\b0*{num}\s*/", nombre):
+        if not totales and not re.search(rf"\b0*{num}\s*/", nombre):
             continue
         cats = " ".join(c.get("slug", "") + " " + c.get("name", "") for c in p.get("categories") or [])
         idi = _idioma_en(nombre + " " + cats.replace("-", " "))
@@ -136,7 +136,7 @@ def _cartas_woocommerce(t, base, numero, total, idioma):
                "stock": bool(p.get("is_in_stock")) and precio > 0}
 
 
-def _cartas_mercadotcg(t, base, numero, total, idioma):
+def _cartas_mercadotcg(t, base, numero, totales, idioma):
     from urllib.parse import urlencode
     for pagina in range(1, 6):
         d = get(t["url"].rstrip("/") + "/api/tienda/productos",
@@ -146,7 +146,7 @@ def _cartas_mercadotcg(t, base, numero, total, idioma):
                 continue
             num, tot = _numero(p.get("codigoCarta"))
             tot = tot or _numero(p.get("totalCartasSet"))[0]
-            if num != numero or (total and tot and tot[1] != total[1]):
+            if num != numero or (totales and tot and tot[1] not in totales):
                 continue
             ids = {i.lower() if i.lower() in ("ja", "en", "es") else _idioma_en(i) for i in p.get("idiomas") or []} - {None}
             if idioma and ids and idioma not in ids:
@@ -178,7 +178,7 @@ def _total_set_tcgdex(set_id):
     return _TOTAL_SET[set_id]
 
 
-def _cartas_dungeon(t, base, numero, total, idioma):
+def _cartas_dungeon(t, base, numero, totales, idioma):
     d = get(t["url"].rstrip("/") + "/api/search/global", {"q": base, "filter": "all", "limit": 100}, intentos=2).json()
     for r in d.get("results") or []:
         meta = r.get("metadata") or {}
@@ -190,7 +190,7 @@ def _cartas_dungeon(t, base, numero, total, idioma):
         lengua = (meta.get("language") or "").lower().replace("jp", "ja")
         if idioma and lengua and lengua != idioma:
             continue
-        if total and _total_set_tcgdex(set_id) != total[1]:
+        if totales and _total_set_tcgdex(set_id) not in totales:
             continue  # mismo nombre y número pero de otro set
         yield {"nombre": f"{r.get('title')} {cod} · {r.get('expansion')}",
                "url": t["url"].rstrip("/") + f"/pe/pokemon/publicaciones/{meta.get('slug')}",
@@ -208,6 +208,12 @@ def en_otras_tiendas(f, tiendas=None):
     if not partes:
         return []
     base, numero, total = partes
+    # MasterSet a veces trae mal el total del set (Dhelmise "91/120" es 091/084 en TCGplayer):
+    # se acepta también el total que da TCGplayer si el número de la carta coincide.
+    totales = {total[1]} if total else set()
+    num_tcg, total_tcg = _numero((f.get("tcg_nombre") or "").rsplit(" ", 1)[-1])
+    if total_tcg and num_tcg and num_tcg[1] == numero[1]:
+        totales.add(total_tcg[1])
     out = []
     for t in tiendas if tiendas is not None else (cargar_config().get("tiendas_cartas") or []):
         if t.get("activa") is False or t.get("tipo") not in BUSCADORES:
@@ -215,7 +221,7 @@ def en_otras_tiendas(f, tiendas=None):
         clave = (t["nombre"], f["id"])
         if clave not in _CACHE_TIENDAS:
             try:
-                _CACHE_TIENDAS[clave] = list(BUSCADORES[t["tipo"]](t, base, numero, total, f.get("idioma")))
+                _CACHE_TIENDAS[clave] = list(BUSCADORES[t["tipo"]](t, base, numero, totales, f.get("idioma")))
             except Exception as ex:  # una tienda caída no frena las demás
                 log.warning("Carta %s en %s: %s", f.get("nombre"), t["nombre"], str(ex)[:150])
                 _CACHE_TIENDAS[clave] = None
