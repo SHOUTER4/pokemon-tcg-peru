@@ -229,6 +229,8 @@ input:focus, select:focus { border-color: var(--primary); outline: none; box-sha
 .vs-bar { height: 8px; border-radius: 999px; background: var(--mut-bg); overflow: hidden; }
 .vs-bar i { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .3s ease-out; }
 .vs-row.tcg .vs-bar i { background: var(--muted); }
+.vs-row.ms .vs-bar i { background: var(--info); }
+.vs-row b a { color: inherit; }
 .vs-sub { color: var(--muted); font-size: 12px; grid-column: 2 / -1; margin-top: -4px; }
 .carta .aviso { margin-top: 8px; font-size: 13px; color: var(--neg); display: flex; gap: 6px; align-items: flex-start; }
 .carta .aviso .ic { flex: none; margin-top: 2px; }
@@ -1296,7 +1298,10 @@ function historialPujas(s) {
 function subastaCard(s) {
   const ms = restante(s), cerrada = ms <= 0 || !!s.resultado, urg = !cerrada && ms < 15 * 60e3;
   const [tone, txt] = consejo(s);
-  const escala = Math.max(s.mercado_pen || 0, s.puja_actual || 0, s.mi_maximo || 0) * 1.05 || 1;
+  const escala = Math.max(s.mercado_pen || 0, s.puja_actual || 0, s.mi_maximo || 0, s.ms_precio || 0) * 1.05 || 1;
+  const msNota = s.ms_precio == null ? '' : !s.puja_actual ? ''
+    : s.puja_actual >= s.ms_precio ? ` Ya cuesta lo mismo o más que en MasterSet (${soles(s.ms_precio)}): mejor cómprala ahí.`
+    : s.ms_precio < (s.tope || Infinity) ? ` En MasterSet está a ${soles(s.ms_precio)}: no pases de ahí.` : '';
   const pos = v => `${Math.min(100, v / escala * 100).toFixed(1)}%`;
   const estado = s.resultado === 'ganada' ? tag('pos', 'check', 'La ganaste')
     : s.resultado === 'perdida' ? tag('mut', 'x', 'No la ganaste')
@@ -1313,11 +1318,12 @@ function subastaCard(s) {
           ${s.tope ? `<span class="tope" style="left:${pos(s.tope)}" title="Tope sugerido ${soles(s.tope)}"></span>` : ''}
           ${s.mi_maximo ? `<span class="max" style="left:${pos(s.mi_maximo)}" title="Tu máximo ${soles(s.mi_maximo)}"></span>` : ''}</span>
           <span class="num">${soles(s.puja_actual)}</span></div>
+        ${s.tcg_nombre ? `<div class="vs-row ms"><b>${s.ms_url ? `<a href="${esc(s.ms_url)}" target="_blank" rel="noopener">MasterSet</a>` : 'MasterSet'}</b><span class="vs-bar"><i style="width:${s.ms_precio ? pos(s.ms_precio) : 0}"></i></span><span class="num">${s.ms_precio != null ? soles(s.ms_precio) : '<span class="hint">no está</span>'}</span></div>` : ''}
         <div class="vs-row tcg"><b>TCGplayer</b><span class="vs-bar"><i style="width:${s.mercado_pen ? pos(s.mercado_pen) : 0}"></i></span><span class="num">${soles(s.mercado_pen)}</span></div>
         <div class="vs-sub">${s.tcg_nombre ? `${esc(s.tcg_nombre)} · ${esc(s.tcg_set)}${s.mercado_usd != null ? ` · US$ ${s.mercado_usd.toFixed(2)}` : ''}` : 'Sin carta de referencia'}
           ${s.tope ? ` · <span style="color:var(--pos)">▮</span> tope ${soles(s.tope)}` : ''}${s.mi_maximo ? ` · <span style="color:var(--accent)">▮</span> tu máximo ${soles(s.mi_maximo)}` : ''}</div>
       </div>
-      <p class="meta" style="margin-top:6px">${tag(tone, tone === 'pos' ? 'down' : tone === 'neg' ? 'alert' : 'scale', tone === 'pos' ? 'Conviene' : tone === 'neg' ? 'Cara' : 'Ojo')}<span>${esc(txt)}</span></p>
+      <p class="meta" style="margin-top:6px">${tag(tone, tone === 'pos' ? 'down' : tone === 'neg' ? 'alert' : 'scale', tone === 'pos' ? 'Conviene' : tone === 'neg' ? 'Cara' : 'Ojo')}<span>${esc(txt + msNota)}</span></p>
       ${historialPujas(s)}
       ${cerrada || !APP ? '' : `<p class="hint" style="margin:6px 0 0;font-size:13px">${icon('bell')} ${s.avisos_pendientes?.length
         ? `Avisos en Windows: ${s.avisos_pendientes.map(horaCorta).join(', ')}` : 'Sin avisos pendientes'}</p>`}

@@ -69,7 +69,8 @@ def masterset(base, numero, total, idioma, tcg_ids):
     s.headers["User-Agent"] = session.headers.get("User-Agent", "Mozilla/5.0")
     s.get(MASTERSET_CATALOGO, timeout=30)   # deja las cookies de sesión y XSRF
     token = urllib.parse.unquote(s.cookies.get("XSRF-TOKEN") or "")
-    r = s.post(MASTERSET_BUSCAR, json={"searchValue": f"{base} {numero[1]}", "take": 60, "skip": 0},
+    consulta = f"{base} {numero[1]}" if numero else base   # sin número se busca por nombre (y se cruza por id)
+    r = s.post(MASTERSET_BUSCAR, json={"searchValue": consulta, "take": 60, "skip": 0},
                headers={"X-Xsrf-Token": token, "Accept": "application/json"}, timeout=30)
     r.raise_for_status()
     out = []

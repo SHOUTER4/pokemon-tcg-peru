@@ -902,6 +902,9 @@ def ejecutar_escaneo(solo=None, alertas=True, web=None):
         fichas, errores_cartas = cartas.actualizar(db, prefs, ts)
         if errores_cartas:
             resumen.append(("Cartas", len(fichas), "; ".join(f"{n}: {e}" for n, e in errores_cartas)[:200]))
+        import subastas  # aquí y no arriba: subastas importa este módulo
+        if subastas.refrescar_masterset(prefs):   # precio en MasterSet de las subastas abiertas
+            subastas.publicar(prefs)
 
     ruta = generar_reporte(db, ts, web)
     objetivos = favoritos_en_objetivo(db, prefs) + cartas.en_objetivo(db, prefs)

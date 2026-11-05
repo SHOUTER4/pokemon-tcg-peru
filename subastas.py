@@ -29,7 +29,8 @@ TOPE = 0.8                      # pujar hasta 80% del mercado sigue siendo buena
 PREFIJO_TAREA = "TCG Subasta"
 RAMA_WEB = "subastas"           # rama de GitHub con subastas.json, que lee la versión web
 CAMPOS_PUBLICOS = ("id", "titulo", "url", "cierre", "puja_actual", "pujas", "resultado", "tcg_nombre",
-                   "tcg_set", "tcg_url", "mercado_usd", "mercado_pen", "imagen")  # nunca mi_maximo
+                   "tcg_set", "tcg_url", "mercado_usd", "mercado_pen", "imagen",
+                   "ms_precio", "ms_url", "ms_ofertas", "ms_detalle")  # nunca mi_maximo
 
 
 def buscar_tcgplayer(q, cuantos=12):
@@ -67,13 +68,52 @@ def tcg_id_de(texto):
 
 
 def referencia(db, tcg_id):
-    """Valor de la carta en TCGplayer, en dólares y soles."""
+    """Valor de la carta en TCGplayer, en dólares y soles, y su oferta más barata en MasterSet."""
     t = cartas.precio_tcgplayer(tcg_id)
     tc = cartas.tipo_cambio(db)
     return {**t, "tcgplayer_id": str(tcg_id), "usd_pen": tc,
             "mercado_pen": round(t["mercado_usd"] * tc, 2) if t["mercado_usd"] else None,
             "imagen": f"https://tcgplayer-cdn.tcgplayer.com/product/{tcg_id}_in_400x400.jpg",
-            "ref_ts": dt.datetime.now().isoformat(timespec="seconds")}
+            "ref_ts": dt.datetime.now().isoformat(timespec="seconds"),
+            **precio_masterset(tcg_id, t.get("tcg_nombre"), t.get("tcg_linea"))}
+
+
+def precio_masterset(tcg_id, tcg_nombre, tcg_linea):
+    """Oferta más barata en MasterSet de la misma carta (mismo id de TCGplayer y mismo idioma:
+    japonés si es de Pokemon Japan, si no inglés). Vacío si no hay o si MasterSet no responde."""
+    import buscador  # aquí y no arriba: buscador importa este módulo
+    base = re.sub(r"\s*-\s*[\w/]+$", "", tcg_nombre or "").strip()
+    num = re.search(r"-\s*([a-z]*\d+)(?:/[\w]+)?$", tcg_nombre or "", re.I)
+    if not base:
+        return {}
+    numero = cartas._numero(num.group(1))[0] if num else None
+    idioma = "ja" if tcg_linea == "Pokemon Japan" else "en"
+    try:
+        ofertas = buscador.masterset(base, numero, None, idioma, {str(tcg_id)})
+    except Exception as ex:
+        log.warning("MasterSet no respondió para %s: %s", tcg_nombre, ex)
+        return {}
+    if not ofertas:
+        return {"ms_precio": None, "ms_ts": dt.datetime.now().isoformat(timespec="seconds")}
+    o = min(ofertas, key=lambda x: x["precio"])
+    return {"ms_precio": o["precio"], "ms_url": o["url"], "ms_ofertas": o["ofertas"], "ms_detalle": o["detalle"],
+            "ms_ts": dt.datetime.now().isoformat(timespec="seconds")}
+
+
+def refrescar_masterset(prefs, horas=6):
+    """Vuelve a mirar MasterSet en las subastas abiertas con referencia de hace más de `horas`."""
+    limite = (dt.datetime.now() - dt.timedelta(hours=horas)).isoformat()
+    cambio = False
+    for s in prefs.get("subastas", {}).values():
+        if (s.get("tcgplayer_id") and not s.get("resultado") and s["cierre"] > dt.datetime.now().isoformat()
+                and (s.get("ms_ts") or "") < limite):
+            for k in [k for k in s if k.startswith("ms_")]:
+                del s[k]
+            s.update(precio_masterset(s["tcgplayer_id"], s.get("tcg_nombre"), s.get("tcg_linea")))
+            cambio = True
+    if cambio:
+        guardar_prefs(prefs)
+    return cambio
 
 
 def _anotar_puja(s, monto, cuando=None):
@@ -122,7 +162,7 @@ def guardar(db, prefs, datos):
         tcg_id = tcg_id_de(tcg) if str(tcg).strip() else None
         if str(tcg).strip() and not tcg_id:
             raise ValueError("No reconozco esa carta: elige un resultado de TCGplayer o pega su link")
-        for k in [k for k in s if k.startswith("tcg_") or k in ("tcgplayer_id", "mercado_usd", "minimo_usd",
+        for k in [k for k in s if k.startswith(("tcg_", "ms_")) or k in ("tcgplayer_id", "mercado_usd", "minimo_usd",
                                                                  "mercado_pen", "usd_pen", "imagen", "ref_ts")]:
             del s[k]
         if tcg_id:
