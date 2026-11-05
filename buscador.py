@@ -58,9 +58,9 @@ def versiones_tcgplayer(base, numero, total, idioma):
                         "tcg_listados": int(x.get("totalListings") or 0),
                         "tcg_url": cartas.TCGPLAYER_WEB.format(pid),
                         "imagen": f"https://tcgplayer-cdn.tcgplayer.com/product/{pid}_in_400x400.jpg"})
-        if out:
-            break
-    return out[:4]
+    # Las dos búsquedas se juntan: con "nombre número" a veces solo sale una versión
+    # (p. ej. la de Prize Pack) y la carta normal aparece buscando solo el nombre.
+    return sorted(out, key=lambda v: -v["tcg_listados"])[:4]
 
 
 def masterset(base, numero, total, idioma, tcg_ids):
