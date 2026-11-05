@@ -39,8 +39,10 @@ mientras la usas. Solo es accesible desde tu PC.
   Pokémon según `equivalencias.yaml`), la tienda recomendada, cuánto ahorras y qué tienda
   sale más barata en general. Filtra por tipo e idioma.
 - **Cartas**: pega el link de una carta de MasterSet (`https://www.masterset.pe/card/…`) y la app
-  compara su oferta más barata con el precio de mercado de TCGplayer (en soles, al tipo de cambio
-  del día). Veredicto: *Buen precio* (hasta 85% del mercado), *Precio justo* (hasta +10%),
+  la busca también en MercadoTCG, Dungeon Collector, Cartón Fino, OkamiDex y TCG House
+  (`tiendas_cartas` en `tiendas.yaml`; se reconoce por nombre, número, total del set e idioma).
+  El precio más bajo en Perú se compara con el de mercado de TCGplayer (en soles, al tipo de cambio
+  del día) y se marca la tienda con el *Mejor precio*; las agotadas salen aparte. Veredicto: *Buen precio* (hasta 85% del mercado), *Precio justo* (hasta +10%),
   *Caro* (hasta +50%) o *Muy caro*. Avisa si MasterSet enlaza otra versión de la carta en
   TCGplayer, guarda el historial y acepta un precio objetivo. "Actualizar precios" revisa solo
   las cartas; el escaneo completo también las incluye.

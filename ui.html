@@ -222,7 +222,10 @@ input:focus, select:focus { border-color: var(--primary); outline: none; box-sha
 .carta h4 a { color: inherit; text-decoration: none; } .carta h4 a:hover { text-decoration: underline; }
 .carta .meta { margin-top: 4px; }
 .vs { display: grid; gap: 6px; margin: 12px 0 4px; }
-.vs-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 14px; }
+.vs-row { display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 14px; }
+.vs-row b a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.vs-sub a { color: inherit; text-decoration: underline; }
+.vs-sub .tag { margin-left: 6px; vertical-align: middle; }
 .vs-bar { height: 8px; border-radius: 999px; background: var(--mut-bg); overflow: hidden; }
 .vs-bar i { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .3s ease-out; }
 .vs-row.tcg .vs-bar i { background: var(--muted); }
@@ -433,7 +436,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
   <section class="view" data-view="cartas" aria-labelledby="t-cartas" hidden>
     <div>
       <h2 id="t-cartas" tabindex="-1">Cartas sueltas</h2>
-      <p class="lead">Sigue cartas de MasterSet y compara su oferta más barata con el precio de mercado de TCGplayer, en soles al tipo de cambio del día.</p>
+      <p class="lead">Sigue cartas de MasterSet: se buscan también en MercadoTCG, Dungeon Collector, Cartón Fino, OkamiDex y TCG House, y el precio más bajo en Perú se compara con el de mercado de TCGplayer, en soles al tipo de cambio del día.</p>
     </div>
     <div class="panel">
       <form class="add-word" id="add-carta">
@@ -788,7 +791,7 @@ function seguirEscaneo() {
     if (e.corriendo) {
       vioCorriendo = true;
       $('#scan-panel').hidden = false;
-      $('#scan-title').textContent = e.tienda === 'Cartas' ? 'Actualizando cartas en MasterSet y TCGplayer…'
+      $('#scan-title').textContent = e.tienda === 'Cartas' ? 'Actualizando cartas en MasterSet, tiendas y TCGplayer…'
         : e.tienda ? `Escaneando ${e.tienda}…` : 'Escaneando todas las tiendas y cartas…';
       $('#scan-log').textContent = e.lineas.slice(-8).join('\n');
       if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Escaneando…'; }
@@ -1059,9 +1062,13 @@ const IDIOMA_CARTA = { ja: 'Japonés', en: 'Inglés', es: 'Español', zh: 'Chino
 const pct = r => `${r >= 1 ? '+' : '−'}${Math.round(Math.abs(r - 1) * 100)}%`;
 function cartaCard(c) {
   const [tone, ic] = VEREDICTO[c.veredicto] || ['mut', null];
-  const max = Math.max(c.precio || 0, c.mercado_pen || 0) || 1;
+  const tiendas = c.tiendas || [];
+  const disp = tiendas.filter(o => o.stock), agot = tiendas.filter(o => !o.stock);
+  const max = Math.max(c.precio || 0, c.mercado_pen || 0, ...disp.map(o => o.precio || 0)) || 1;
   const bar = v => `<span class="vs-bar"><i style="width:${v ? Math.max(4, v / max * 100) : 0}%"></i></span>`;
-  const hit = c.objetivo && c.precio != null && c.precio <= c.objetivo;
+  const mejor = c.mejor_precio ?? c.precio, unico = (disp.length + (c.precio != null ? 1 : 0)) > 1;
+  const best = (t, v) => unico && v != null && t === c.mejor_tienda ? ` ${tag('pos', 'down', 'Mejor precio')}` : '';
+  const hit = c.objetivo && mejor != null && mejor <= c.objetivo;
   const meta = [c.set, IDIOMA_CARTA[c.idioma] || c.idioma, c.rareza].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
   const hist = (c.historial || []).map(h => ({ fecha: h.fecha, precio: h.precio, stock: true }));
   return `<article class="carta v-${esc(c.veredicto || 'sin_ref')}">
@@ -1074,7 +1081,10 @@ function cartaCard(c) {
         ${hit ? tag('pos', 'target', '¡En tu precio objetivo!') : ''}</div>
       <div class="vs">
         <div class="vs-row"><b>MasterSet</b>${bar(c.precio)}<span class="num">${soles(c.precio)}</span></div>
-        <div class="vs-sub">${c.ofertas || 0} oferta${c.ofertas === 1 ? '' : 's'}${c.ultima_venta ? ` · última venta ${soles(c.ultima_venta)} (${esc(c.ultima_venta_fecha)})` : ''}</div>
+        <div class="vs-sub">${c.ofertas || 0} oferta${c.ofertas === 1 ? '' : 's'}${c.ultima_venta ? ` · última venta ${soles(c.ultima_venta)} (${esc(c.ultima_venta_fecha)})` : ''}${best('MasterSet', c.precio)}</div>
+        ${disp.map(o => `<div class="vs-row"><b><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.tienda)}</a></b>${bar(o.precio)}<span class="num">${soles(o.precio)}</span></div>
+        <div class="vs-sub">${esc(o.detalle)}${o.ofertas > 1 ? ` · ${o.ofertas} ofertas` : ''}${best(o.tienda, o.precio)}</div>`).join('')}
+        ${agot.length ? `<div class="vs-sub">Agotada en ${agot.map(o => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.tienda)}</a>`).join(', ')}</div>` : ''}
         <div class="vs-row tcg"><b>TCGplayer</b>${bar(c.mercado_pen)}<span class="num">${soles(c.mercado_pen)}</span></div>
         <div class="vs-sub">${c.mercado_usd != null ? `Mercado US$ ${c.mercado_usd.toFixed(2)}` : 'Sin precio de mercado'}${c.minimo_usd != null ? ` · desde US$ ${c.minimo_usd.toFixed(2)}` : ''}${c.tcg_listados ? ` · ${c.tcg_listados} listados` : ''}</div>
       </div>

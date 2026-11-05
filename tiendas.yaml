@@ -186,5 +186,15 @@ cartas:
   - https://www.masterset.pe/card/a2d5ab31-ec32-4e23-bb52-dd2fc18ad85a  # Doublade 091/080
   - https://www.masterset.pe/card/a2d59714-8fce-4bb8-b1cc-a6e97a09bdd4  # Heliolisk 201/193
 
+# Tiendas donde se busca cada carta seguida, para comparar con MasterSet. La carta se
+# reconoce por nombre + número (y total del set, e idioma cuando la tienda lo indica).
+# Tipos: woocommerce (API pública), mercadotcg y dungeon (APIs de búsqueda de esas webs).
+tiendas_cartas:
+  - {nombre: MercadoTCG, tipo: mercadotcg, url: https://mercadotcg.pe}
+  - {nombre: Dungeon Collector, tipo: dungeon, url: https://dungeoncollector.pe}
+  - {nombre: Cartón Fino, tipo: woocommerce, url: https://cartonfino.pe}
+  - {nombre: OkamiDex, tipo: woocommerce, url: https://okamidex.pe}
+  - {nombre: TCG House, tipo: woocommerce, url: https://tcghouseperu.com}
+
 # Palabras que se resaltan en el reporte y en las alertas (minúsculas).
 vigilar: [151, prismatic, evoluciones prismáticas, booster box, elite trainer box, etb, 30 aniversario]
