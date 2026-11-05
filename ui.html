@@ -266,6 +266,9 @@ input[type=datetime-local] { width: 100%; min-height: 44px; padding: 8px 12px; f
 /* Ajustes */
 .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
 .add-word { display: flex; gap: 8px; margin-top: 8px; }
+.buscar-carta select { width: auto; flex: none; }
+@media (max-width: 560px) { .buscar-carta { flex-wrap: wrap; } .buscar-carta input { flex-basis: 100%; } .buscar-carta button { flex: 1; } }
+.bc-head { grid-column: 1 / -1; font-size: 13px; color: var(--muted); margin: 4px 0 -4px; }
 .store-row { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
 .store-row:first-of-type { border-top: 0; }
 .store-row .actions { display: flex; gap: 8px; align-items: center; }
@@ -439,6 +442,19 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
       <p class="lead">Sigue cartas de MasterSet: se buscan también en MercadoTCG, Dungeon Collector, Cartón Fino, OkamiDex y TCG House, y el precio más bajo en Perú se compara con el de mercado de TCGplayer, en soles al tipo de cambio del día.</p>
     </div>
     <div class="panel">
+      <h3 style="margin:0 0 10px">Buscar una carta en Perú</h3>
+      <form class="add-word buscar-carta" id="buscar-carta">
+        <label class="sr" for="bc-q">Nombre y número de la carta</label>
+        <input type="text" id="bc-q" placeholder="Nombre y número, p. ej. Dhelmise 091/084" autocomplete="off" required minlength="3" maxlength="80">
+        <label class="sr" for="bc-idioma">Idioma</label>
+        <select id="bc-idioma"><option value="en">Inglés</option><option value="ja">Japonés</option><option value="es">Español</option></select>
+        <button class="btn primary" type="submit" id="bc-btn">Buscar</button>
+      </form>
+      <p class="hint" style="margin:8px 0 0" id="bc-hint"></p>
+      <div id="bc-res" class="cartas" style="margin-top:12px"></div>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0 0 10px">Seguir una carta todos los días</h3>
       <form class="add-word" id="add-carta">
         <label class="sr" for="carta-url">Link de la carta en MasterSet</label>
         <input type="url" id="carta-url" placeholder="Pega el link: https://www.masterset.pe/card/…" autocomplete="off" required>
@@ -672,7 +688,7 @@ async function cargar() {
   }
   preparar();
   renderTodo();
-  if (WEB && D.repo) { cargarSubastasWeb(); setInterval(cargarSubastasWeb, 120e3); }
+  if (WEB && D.repo) { cargarSubastasWeb(); setInterval(cargarSubastasWeb, 120e3); cargarBusquedasWeb(true); }
 }
 // Versión web: las subastas (sin datos personales) vienen de subastas.json en la rama
 // "subastas", que la app publica cada vez que anotas una puja. Se leen con la API de GitHub
@@ -1097,7 +1113,7 @@ function cartaCard(c) {
         <button class="btn small" type="submit">Guardar</button></form>` : ''}
       <a class="btn small ghost" href="${esc(c.url)}" target="_blank" rel="noopener">${icon('ext')}MasterSet</a>
       ${c.tcg_url ? `<a class="btn small ghost" href="${esc(c.tcg_url)}" target="_blank" rel="noopener">${icon('ext')}TCGplayer</a>` : ''}
-      ${APP ? `<button class="icon-btn" type="button" data-del-carta="${esc(c.id)}" aria-label="Dejar de seguir ${esc(c.nombre)}" title="Dejar de seguir">${icon('close')}</button>` : ''}
+      ${APP || BUZON() ? `<button class="icon-btn" type="button" data-del-carta="${esc(c.id)}" aria-label="Dejar de seguir ${esc(c.nombre)}" title="Dejar de seguir">${icon('close')}</button>` : ''}
     </div>
     ${hist.length ? `<details><summary>Historial de precio en MasterSet (${hist.length} registro${hist.length === 1 ? '' : 's'})</summary>${grafico(hist)}</details>` : ''}
   </article>`;
@@ -1106,7 +1122,10 @@ function renderCartas() {
   const tc = D.cartas.find(c => c.usd_pen)?.usd_pen;
   $('#cartas-hint').innerHTML = `Veredicto: <b>Buen precio</b> hasta 85% del mercado · <b>Precio justo</b> hasta +10% · <b>Caro</b> hasta +50% · <b>Muy caro</b> más de +50%.
     Comprar en TCGplayer suma envío e impuestos a Perú, así que en cartas baratas la diferencia suele no compensar.${tc ? ` Tipo de cambio: S/ ${tc.toFixed(3)} por dólar.` : ''}`;
-  $('#add-carta').hidden = !APP;
+  $('#add-carta').hidden = !(APP || BUZON());
+  $('#buscar-carta').closest('.panel').hidden = !(APP || BUZON());
+  $('#bc-hint').innerHTML ||= BUZON() ? 'Se abre GitHub con el pedido ya escrito: dale a <b>Create</b> y el resultado aparece aquí en 1–2 minutos.'
+    : 'Busca en MasterSet, MercadoTCG, Dungeon Collector, Cartón Fino, OkamiDex y TCG House, y compara con TCGplayer.';
   $('#cartas-refresh').hidden = !APP || !D.cartas.length;
   const orden = $('#carta-orden').value;
   const lista = [...D.cartas].sort((a, b) => orden === 'nombre' ? (a.nombre || '').localeCompare(b.nombre || '')
@@ -1114,8 +1133,90 @@ function renderCartas() {
   const buenas = D.cartas.filter(c => c.veredicto === 'buen_precio' || c.veredicto === 'justo').length;
   $('#cartas-result').textContent = D.cartas.length ? `${D.cartas.length} carta${D.cartas.length === 1 ? '' : 's'} · ${buenas} a buen precio o precio justo` : '';
   $('#cartas-list').innerHTML = lista.length ? lista.map(cartaCard).join('')
-    : `<div class="empty">${icon('layers')}<strong>Todavía no sigues cartas</strong>${APP ? 'Pega arriba el link de una carta de MasterSet.' : 'Abre la app para agregar cartas.'}</div>`;
+    : `<div class="empty">${icon('layers')}<strong>Todavía no sigues cartas</strong>${APP || BUZON() ? 'Pega arriba el link de una carta de MasterSet.' : 'Abre la app para agregar cartas.'}</div>`;
 }
+
+/* ---- Buscar una carta: en la app responde al instante; en la web va por el buzón de GitHub
+   (un issue que procesa el workflow "Buzón" y deja el resultado en la rama "busquedas"). ---- */
+const BUZON = () => WEB && !!D.repo;
+function pedidoGithub(titulo) {
+  const cuerpo = 'Pedido desde la web. Solo dale a "Create" (o "Submit new issue"): el workflow Buzón lo procesa, responde aquí y lo cierra solo.';
+  window.open(`https://github.com/${D.repo}/issues/new?title=${encodeURIComponent(titulo)}&body=${encodeURIComponent(cuerpo)}`, '_blank', 'noopener');
+}
+const yaSigo = id => D.cartas.some(c => c.id === id);
+function resultadoCard(v) {
+  const [tone, ic] = VEREDICTO[v.veredicto] || ['mut', null];
+  const disp = (v.peru || []).filter(o => o.stock && o.precio), agot = (v.peru || []).filter(o => !o.stock);
+  const max = Math.max(v.mercado_pen || 0, ...disp.map(o => o.precio)) || 1;
+  const bar = x => `<span class="vs-bar"><i style="width:${x ? Math.max(4, x / max * 100) : 0}%"></i></span>`;
+  const meta = [v.tcg_set, IDIOMA_CARTA[v.idioma] || v.idioma, v.rareza].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+  const titulo = esc(v.tcg_nombre || v.nombre);
+  return `<article class="carta v-${esc(v.veredicto || 'sin_ref')}">
+    ${thumb(v.imagen)}
+    <div style="min-width:0">
+      <h4>${v.tcg_url ? `<a href="${esc(v.tcg_url)}" target="_blank" rel="noopener">${titulo}</a>` : titulo}</h4>
+      <div class="meta">${meta}</div>
+      <div class="meta" style="margin-top:8px">${tag(tone, ic, v.veredicto_txt || 'Sin datos')}
+        ${v.ratio != null ? `<span class="num"><b style="color:var(--fg)">${pct(v.ratio)}</b> vs. TCGplayer (${v.dif < 0 ? '−' : '+'}${soles(Math.abs(v.dif))})</span>` : ''}</div>
+      <div class="vs">
+        ${disp.map(o => `<div class="vs-row"><b><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.tienda)}</a></b>${bar(o.precio)}<span class="num">${soles(o.precio)}</span></div>
+        <div class="vs-sub">${esc(o.detalle || '')}${o.ofertas > 1 ? ` · ${o.ofertas} ofertas` : ''}${disp.length > 1 && o.tienda === v.mejor_tienda ? ` ${tag('pos', 'down', 'Mejor precio')}` : ''}</div>`).join('')}
+        ${!disp.length ? '<div class="vs-sub">No está disponible en ninguna tienda de Perú.</div>' : ''}
+        ${agot.length ? `<div class="vs-sub">Agotada en ${agot.map(o => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.tienda)}</a>`).join(', ')}</div>` : ''}
+        <div class="vs-row tcg"><b>TCGplayer</b>${bar(v.mercado_pen)}<span class="num">${soles(v.mercado_pen)}</span></div>
+        <div class="vs-sub">${v.mercado_usd != null ? `Mercado US$ ${v.mercado_usd.toFixed(2)}` : 'Sin precio de mercado'}${v.minimo_usd != null ? ` · desde US$ ${v.minimo_usd.toFixed(2)}` : ''}${v.tcg_listados ? ` · ${v.tcg_listados} listados` : ''}</div>
+      </div>
+    </div>
+    ${v.masterset_id && (APP || BUZON()) ? `<div class="acts">${yaSigo(v.masterset_id) ? `<span class="hint">${icon('check')}Ya la sigues</span>`
+      : `<button class="btn small" type="button" data-seguir="${esc(v.masterset_id)}">${icon('plus')}Seguir esta carta</button>`}</div>` : ''}
+  </article>`;
+}
+function renderBusqueda(r) {
+  if (r.error) { $('#bc-res').innerHTML = `<div class="empty">${icon('alert')}<strong>No se pudo buscar «${esc(r.consulta)}»</strong>${esc(r.error)}</div>`; return; }
+  const cab = `<p class="bc-head">${esc(r.consulta)} · ${esc(IDIOMA_CARTA[r.idioma] || r.idioma)}${r.ts ? ` · buscada ${fechaCorta(r.ts)}` : ''}${r.versiones.length > 1 ? ` · ${r.versiones.length} versiones` : ''}</p>`;
+  $('#bc-res').innerHTML = cab + r.versiones.map(resultadoCard).join('');
+}
+let BUSQ_ESPERA = null, BUSQ_T = null;
+async function cargarBusquedasWeb(primera) {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${D.repo}/contents/busquedas.json?ref=busquedas`,
+      { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' });
+    if (!r.ok) return;
+    const lista = (await r.json()).busquedas || [];
+    if (BUSQ_ESPERA) {
+      const b = lista.find(x => norm(x.consulta) === norm(BUSQ_ESPERA.q) && x.idioma === BUSQ_ESPERA.idioma
+        && Date.parse(x.ts) >= BUSQ_ESPERA.t - 60e3);
+      if (b) { BUSQ_ESPERA = null; clearInterval(BUSQ_T); renderBusqueda(b); $('#bc-hint').textContent = 'Listo.'; }
+      else if (Date.now() - BUSQ_ESPERA.t > 6 * 60e3) {
+        BUSQ_ESPERA = null; clearInterval(BUSQ_T);
+        $('#bc-hint').innerHTML = `Todavía no llega. Revisa el pedido en <a href="https://github.com/${esc(D.repo)}/issues?q=is%3Aissue" target="_blank" rel="noopener">GitHub</a>; la respuesta queda ahí.`;
+      }
+    } else if (primera && lista.length) renderBusqueda(lista[0]);
+  } catch (_) { /* sin conexión o límite de la API: se reintenta */ }
+}
+$('#buscar-carta').addEventListener('submit', async e => {
+  e.preventDefault();
+  const q = $('#bc-q').value.trim(), idioma = $('#bc-idioma').value, btn = $('#bc-btn');
+  if (BUZON()) {
+    pedidoGithub(`Buscar: ${q} [${idioma}]`);
+    BUSQ_ESPERA = { q, idioma, t: Date.now() };
+    $('#bc-res').innerHTML = `<div class="empty"><span class="spin" aria-hidden="true"></span><strong>Esperando a GitHub…</strong>Dale a <b>Create</b> en la pestaña que se abrió. El resultado aparece aquí solo.</div>`;
+    clearInterval(BUSQ_T); BUSQ_T = setInterval(cargarBusquedasWeb, 15e3);
+    return;
+  }
+  btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Buscando…';
+  try { renderBusqueda(await api(`/api/buscar-carta?q=${encodeURIComponent(q)}&idioma=${idioma}`)); }
+  catch (err) { toast(err.message); }
+  btn.disabled = false; btn.textContent = 'Buscar';
+});
+$('#bc-res').addEventListener('click', async e => {
+  const b = e.target.closest('[data-seguir]'); if (!b) return;
+  const url = `https://www.masterset.pe/card/${b.dataset.seguir}`;
+  if (BUZON()) { pedidoGithub(`Seguir: ${url}`); toast('Dale a Create en GitHub: la carta sale en tu lista en unos minutos'); return; }
+  b.disabled = true;
+  try { const r = await accionCarta({ accion: 'agregar', url }); toast(`Ahora sigues ${r.cartas.find(x => x.id === r.id)?.nombre || 'la carta'}`); }
+  catch (err) { toast(err.message); b.disabled = false; }
+});
 $('#carta-orden').addEventListener('change', renderCartas);
 $('#cartas-refresh').addEventListener('click', () => iniciarEscaneo('Cartas'));
 async function accionCarta(body) {
@@ -1127,6 +1228,11 @@ async function accionCarta(body) {
 $('#add-carta').addEventListener('submit', async e => {
   e.preventDefault();
   const inp = $('#carta-url'), btn = $('#carta-btn');
+  if (BUZON()) {
+    pedidoGithub(`Seguir: ${inp.value.trim()}`);
+    toast('Dale a Create en GitHub: la carta sale en tu lista en unos minutos');
+    inp.value = ''; return;
+  }
   btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Revisando…';
   try {
     const r = await accionCarta({ accion: 'agregar', url: inp.value.trim() });
@@ -1147,6 +1253,10 @@ $('#cartas-list').addEventListener('submit', async e => {
 });
 $('#cartas-list').addEventListener('click', async e => {
   const b = e.target.closest('[data-del-carta]'); if (!b) return;
+  if (BUZON()) {
+    pedidoGithub(`Dejar: https://www.masterset.pe/card/${b.dataset.delCarta}`);
+    toast('Dale a Create en GitHub: la carta sale de tu lista en unos minutos'); return;
+  }
   try { await accionCarta({ accion: 'quitar', id: b.dataset.delCarta }); toast('Ya no sigues esa carta'); }
   catch (err) { toast(err.message); }
 });

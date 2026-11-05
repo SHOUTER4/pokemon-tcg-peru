@@ -1,0 +1,80 @@
+# Buzón de la versión web: la página abre un issue ya escrito ("Buscar: …", "Seguir: …",
+# "Dejar: …") y este workflow lo procesa con buzon.py. Solo atiende issues del dueño del
+# repositorio; los de cualquier otra persona se ignoran.
+name: Buzón (pedidos desde la web)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write   # rama "busquedas" y la lista de cartas en tiendas.yaml
+  issues: write     # responder y cerrar el pedido
+  actions: write    # lanzar el escaneo después de seguir o dejar una carta
+
+concurrency:
+  group: buzon
+  cancel-in-progress: false
+
+jobs:
+  pedido:
+    if: >-
+      github.event.issue.user.login == github.repository_owner &&
+      (startsWith(github.event.issue.title, 'Buscar:') ||
+       startsWith(github.event.issue.title, 'Seguir:') ||
+       startsWith(github.event.issue.title, 'Dejar:'))
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/Lima
+      GH_TOKEN: ${{ github.token }}
+      # El título va por variable de entorno, nunca pegado en el script (evita inyección).
+      TITULO: ${{ github.event.issue.title }}
+      NUMERO: ${{ github.event.issue.number }}
+      RESPUESTA: ${{ runner.temp }}/respuesta.md
+      BUSQUEDAS: ${{ runner.temp }}/busquedas.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Recuperar búsquedas anteriores
+        run: |
+          if git fetch --depth=1 origin busquedas; then
+            git show FETCH_HEAD:busquedas.json > "$BUSQUEDAS" || true
+          fi
+
+      - name: Procesar pedido
+        run: python buzon.py
+
+      - name: Guardar búsquedas (rama busquedas)
+        run: |
+          [ -f "$BUSQUEDAS" ] || exit 0
+          cd "$RUNNER_TEMP"
+          rm -rf rama && mkdir rama && cd rama
+          git init -q -b busquedas
+          cp "$BUSQUEDAS" busquedas.json
+          git add busquedas.json
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Búsqueda #$NUMERO"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" busquedas
+
+      - name: Guardar lista de cartas y escanear
+        run: |
+          git diff --quiet tiendas.yaml && exit 0
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Cartas: pedido #$NUMERO desde la web" tiendas.yaml
+          git push -q origin HEAD:main
+          # Un push hecho con el token del workflow no lanza otros workflows: se lanza a mano.
+          gh workflow run escaneo.yml --ref main
+
+      - name: Responder y cerrar el pedido
+        if: always()
+        run: |
+          [ -f "$RESPUESTA" ] || echo "No se pudo procesar el pedido; revisa el log del workflow." > "$RESPUESTA"
+          gh issue comment "$NUMERO" --body-file "$RESPUESTA"
+          gh issue close "$NUMERO"

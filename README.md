@@ -46,6 +46,15 @@ mientras la usas. Solo es accesible desde tu PC.
   *Caro* (hasta +50%) o *Muy caro*. Avisa si MasterSet enlaza otra versión de la carta en
   TCGplayer, guarda el historial y acepta un precio objetivo. "Actualizar precios" revisa solo
   las cartas; el escaneo completo también las incluye.
+- **Buscar una carta**: escribe nombre y número (`Dhelmise 091/084`) y el idioma, y ves su precio
+  en MasterSet y en esas tiendas frente a TCGplayer, con la más barata y el veredicto. En la app
+  responde al instante (`buscador.py`).
+- **Desde la web (buzón de GitHub)**: la web no puede escribir en el repositorio, así que al buscar,
+  seguir una carta (link de MasterSet) o dejar de seguirla abre un issue ya escrito
+  (`Buscar: …`, `Seguir: …`, `Dejar: …`). Le das *Create* y el workflow `buzon.yml` lo procesa con
+  `buzon.py`: responde en el issue, lo cierra y deja la búsqueda en la rama `busquedas` (la web la
+  muestra en 1–2 min) o cambia la lista `cartas:` de `tiendas.yaml` y lanza el escaneo. Solo se
+  atienden issues del dueño del repositorio; los issues son públicos, como el repositorio.
 - **Subastas**: anota el link de una subasta (Facebook, grupos…), la hora de cierre, la puja
   actual y tu máximo, y elige la carta en TCGplayer con el buscador. La app muestra la cuenta
   regresiva, hasta cuánto conviene pujar (80% del valor de mercado) y si ya pasaron tu máximo.

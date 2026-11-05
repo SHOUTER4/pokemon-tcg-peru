@@ -20,6 +20,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+import buscador
 import cartas
 import scanner
 import subastas
@@ -93,6 +94,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(subastas.buscar_tcgplayer(texto))
             except Exception as ex:
                 return self._json({"error": f"TCGplayer no respondió: {ex}"}, 502)
+        if url.path == "/api/buscar-carta":
+            try:
+                return self._json(buscador.buscar(q.get("q", ""), q.get("idioma", "en")))
+            except ValueError as ex:
+                return self._json({"error": str(ex)}, 400)
+            except Exception as ex:
+                return self._json({"error": f"No se pudo buscar: {ex}"}, 502)
         if url.path == "/api/estado":
             with candado:
                 return self._json(estado)
