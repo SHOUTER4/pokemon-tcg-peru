@@ -30,7 +30,7 @@ PREFIJO_TAREA = "TCG Subasta"
 RAMA_WEB = "subastas"           # rama de GitHub con subastas.json, que lee la versión web
 CAMPOS_PUBLICOS = ("id", "titulo", "url", "cierre", "puja_actual", "pujas", "resultado", "tcg_nombre",
                    "tcg_set", "tcg_url", "mercado_usd", "mercado_pen", "imagen",
-                   "ms_precio", "ms_url", "ms_ofertas", "ms_detalle")  # nunca mi_maximo
+                   "ms_precio", "ms_url", "ms_ofertas", "ms_detalle", "lote")  # nunca mi_maximo
 
 
 def buscar_tcgplayer(q, cuantos=12):
@@ -78,6 +78,38 @@ def referencia(db, tcg_id):
             **precio_masterset(tcg_id, t.get("tcg_nombre"), t.get("tcg_linea"))}
 
 
+CAMPOS_LOTE = ("tcgplayer_id", "tcg_nombre", "tcg_set", "tcg_url", "tcg_linea", "mercado_usd", "mercado_pen",
+               "imagen", "ms_precio", "ms_url", "ms_ofertas", "ms_detalle", "ms_ts")
+
+
+def _suma(valores):
+    """Suma si todas las cartas del lote tienen el dato; si falta alguna, None."""
+    return round(sum(valores), 2) if valores and all(v is not None for v in valores) else None
+
+
+def resumen_lote(lote, tc=None):
+    """Campos de la subasta para un lote de varias cartas: mercado y MasterSet sumados,
+    nombre "A + B". Cada carta sigue con sus propios precios en "lote"."""
+    sets = list(dict.fromkeys(c.get("tcg_set") for c in lote if c.get("tcg_set")))
+    falta_ms = [c.get("tcg_nombre") or "?" for c in lote if c.get("ms_precio") is None]
+    return {"lote": lote, "tcg_nombre": " + ".join(c.get("tcg_nombre") or "?" for c in lote),
+            "tcg_set": " / ".join(sets), "tcg_url": lote[0].get("tcg_url"), "imagen": lote[0].get("imagen"),
+            "mercado_usd": _suma([c.get("mercado_usd") for c in lote]),
+            "mercado_pen": _suma([c.get("mercado_pen") for c in lote]),
+            "ms_precio": _suma([c.get("ms_precio") for c in lote]), "ms_url": None,
+            "ms_ofertas": None, "ms_detalle": f"Falta en MasterSet: {', '.join(falta_ms)}" if falta_ms else None,
+            **({"usd_pen": tc} if tc else {}), "ref_ts": dt.datetime.now().isoformat(timespec="seconds")}
+
+
+def referencia_lote(db, tcg_ids):
+    """Referencia de un lote (2 o más cartas que se subastan juntas)."""
+    lote = []
+    for tcg_id in tcg_ids:
+        r = referencia(db, tcg_id)
+        lote.append({k: r.get(k) for k in CAMPOS_LOTE})
+    return resumen_lote(lote, cartas.tipo_cambio(db))
+
+
 def precio_masterset(tcg_id, tcg_nombre, tcg_linea):
     """Oferta más barata en MasterSet de la misma carta (mismo id de TCGplayer y mismo idioma:
     japonés si es de Pokemon Japan, si no inglés). Vacío si no hay o si MasterSet no responde."""
@@ -105,6 +137,16 @@ def refrescar_masterset(prefs, horas=6):
     limite = (dt.datetime.now() - dt.timedelta(hours=horas)).isoformat()
     cambio = False
     for s in prefs.get("subastas", {}).values():
+        if s.get("lote") and not s.get("resultado") and s["cierre"] > dt.datetime.now().isoformat():
+            viejas = [c for c in s["lote"] if (c.get("ms_ts") or "") < limite]
+            for c in viejas:
+                for k in [k for k in c if k.startswith("ms_")]:
+                    del c[k]
+                c.update(precio_masterset(c["tcgplayer_id"], c.get("tcg_nombre"), c.get("tcg_linea")))
+            if viejas:
+                s.update(resumen_lote(s["lote"]))
+                cambio = True
+            continue
         if (s.get("tcgplayer_id") and not s.get("resultado") and s["cierre"] > dt.datetime.now().isoformat()
                 and (s.get("ms_ts") or "") < limite):
             for k in [k for k in s if k.startswith("ms_")]:
@@ -158,15 +200,18 @@ def guardar(db, prefs, datos):
     s.setdefault("creada", dt.datetime.now().isoformat(timespec="seconds"))
 
     tcg = datos.get("tcg")
-    if tcg is not None:  # "" quita la referencia; un id o link la (re)calcula
-        tcg_id = tcg_id_de(tcg) if str(tcg).strip() else None
-        if str(tcg).strip() and not tcg_id:
+    if tcg is not None:  # "" quita la referencia; un id o link la (re)calcula; "id1 + id2" es un lote
+        partes = [p for p in re.split(r"\s*[+,]\s*|\s+", str(tcg).strip()) if p]
+        ids = [tcg_id_de(p) for p in partes]
+        if partes and not all(ids):
             raise ValueError("No reconozco esa carta: elige un resultado de TCGplayer o pega su link")
         for k in [k for k in s if k.startswith(("tcg_", "ms_")) or k in ("tcgplayer_id", "mercado_usd", "minimo_usd",
-                                                                 "mercado_pen", "usd_pen", "imagen", "ref_ts")]:
+                                                                 "mercado_pen", "usd_pen", "imagen", "ref_ts", "lote")]:
             del s[k]
-        if tcg_id:
-            s.update(referencia(db, tcg_id))
+        if len(ids) > 1:
+            s.update(referencia_lote(db, ids))
+        elif ids:
+            s.update(referencia(db, ids[0]))
     subastas[sid] = s
     guardar_prefs(prefs)
     s["avisos_programados"] = programar_avisos(s)

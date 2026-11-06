@@ -232,6 +232,9 @@ input:focus, select:focus { border-color: var(--primary); outline: none; box-sha
 .vs-row.ms .vs-bar i { background: var(--info); }
 .vs-row b a { color: inherit; }
 .vs-sub { color: var(--muted); font-size: 12px; grid-column: 2 / -1; margin-top: -4px; }
+.lote { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.lote li { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; padding: 4px 8px; border-radius: 6px; background: var(--surface-2, rgba(127,127,127,.08)); }
+.lote li > .num { margin-left: auto; }
 .carta .aviso { margin-top: 8px; font-size: 13px; color: var(--neg); display: flex; gap: 6px; align-items: flex-start; }
 .carta .aviso .ic { flex: none; margin-top: 2px; }
 .carta .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: end; padding-top: 12px; border-top: 1px solid var(--line); }
@@ -1295,6 +1298,16 @@ function historialPujas(s) {
   const ult = p[p.length - 1];
   return `<p class="hint" style="margin:6px 0 0;font-size:13px">${icon('gavel')} Pujas: <span class="num">${p.slice(-8).map(x => soles(x.monto)).join(' → ')}</span> · última ${esc(hace(ult.ts))}</p>`;
 }
+function loteFilas(s) {
+  // Lote de varias cartas en una sola subasta: cada una con su precio y su parte del tope.
+  if (!s.lote?.length) return '';
+  return `<ul class="lote">${s.lote.map(c => `<li>
+      <a href="${esc(c.tcg_url)}" target="_blank" rel="noopener">${esc(c.tcg_nombre)}</a> <span class="hint">${esc(c.tcg_set || '')}</span>
+      <span class="num">TCG ${soles(c.mercado_pen)} · ${c.ms_precio != null
+        ? `<a href="${esc(c.ms_url)}" target="_blank" rel="noopener">MasterSet ${soles(c.ms_precio)}</a>` : '<span class="hint">no está en MasterSet</span>'}
+      ${c.mercado_pen ? ` · tope ${soles(Math.round(c.mercado_pen * 0.8))}` : ''}</span></li>`).join('')}</ul>
+    ${s.ms_precio == null && s.ms_detalle ? `<div class="vs-sub">${esc(s.ms_detalle)}</div>` : ''}`;
+}
 function subastaCard(s) {
   const ms = restante(s), cerrada = ms <= 0 || !!s.resultado, urg = !cerrada && ms < 15 * 60e3;
   const [tone, txt] = consejo(s);
@@ -1322,6 +1335,7 @@ function subastaCard(s) {
         <div class="vs-row tcg"><b>TCGplayer</b><span class="vs-bar"><i style="width:${s.mercado_pen ? pos(s.mercado_pen) : 0}"></i></span><span class="num">${soles(s.mercado_pen)}</span></div>
         <div class="vs-sub">${s.tcg_nombre ? `${esc(s.tcg_nombre)} · ${esc(s.tcg_set)}${s.mercado_usd != null ? ` · US$ ${s.mercado_usd.toFixed(2)}` : ''}` : 'Sin carta de referencia'}
           ${s.tope ? ` · <span style="color:var(--pos)">▮</span> tope ${soles(s.tope)}` : ''}${s.mi_maximo ? ` · <span style="color:var(--accent)">▮</span> tu máximo ${soles(s.mi_maximo)}` : ''}</div>
+        ${loteFilas(s)}
       </div>
       <p class="meta" style="margin-top:6px">${tag(tone, tone === 'pos' ? 'down' : tone === 'neg' ? 'alert' : 'scale', tone === 'pos' ? 'Conviene' : tone === 'neg' ? 'Cara' : 'Ojo')}<span>${esc(txt + msNota)}</span></p>
       ${historialPujas(s)}
@@ -1378,8 +1392,9 @@ $('#sub-buscar-btn').addEventListener('click', async () => {
   const inp = $('#sub-buscar'), q = (inp.value.trim() || $('#sub-titulo').value.trim());
   const caja = $('#sub-resultados');
   if (!q) { inp.focus(); return; }
-  if (/^https?:\/\//.test(q) || /^\d+$/.test(q)) {
-    elegidaTcg = q; caja.innerHTML = `<p class="hint" style="margin:0">Se usará ese link como referencia al guardar.</p>`; return;
+  if (/^(https?:\/\/\S+|\d+)(\s*[+,]\s*(https?:\/\/\S+|\d+))*$/.test(q)) {   // uno o varios (lote: "id1 + id2")
+    elegidaTcg = q; caja.innerHTML = `<p class="hint" style="margin:0">${/[+,]/.test(q)
+      ? 'Lote: se sumarán las cartas como referencia al guardar.' : 'Se usará ese link como referencia al guardar.'}</p>`; return;
   }
   const b = $('#sub-buscar-btn'); b.disabled = true; b.innerHTML = '<span class="spin" aria-hidden="true"></span>Buscando…';
   try {

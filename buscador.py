@@ -42,7 +42,9 @@ def versiones_tcgplayer(base, numero, total, idioma):
     """Productos de TCGplayer con ese nombre y número (y total, si lo diste), del idioma pedido."""
     linea = LINEA.get(idioma, "Pokemon")
     vistos, out = set(), []
-    for q in (f"{base} {numero[1]}", base):
+    # "Groudon 84" no encuentra la 084/076 y buscar solo "Groudon" puede dejarla fuera de los
+    # 50 primeros: también se busca con el número a 3 cifras.
+    for q in dict.fromkeys((f"{base} {numero[1]}", f"{base} {numero[1]:03d}", base)):
         for x in _tcgplayer(q):
             pid = str(int(x["productId"]))
             num, tot = cartas._numero((x.get("customAttributes") or {}).get("number"))
