@@ -1,6 +1,6 @@
 """Lee las pujas de las subastas de Facebook sin Claude, solo LEYENDO (nunca comenta ni reacciona).
 
-Usa un Chrome aparte (perfil en data/fb-perfil) donde inicias sesión una vez con --login; tu
+Usa Brave con un perfil aparte (data/fb-perfil-brave) donde inicias sesión una vez con --login; tu
 sesión de Facebook se queda solo en esta PC (nunca va a GitHub). Una tarea de Windows lo corre
 cada 5 minutos, pero solo abre Facebook cuando toca:
 
@@ -13,24 +13,32 @@ Si alguien supera tu puja también te avisa. Las pujas se anotan en la app y en 
 siempre (subastas.marcar), sin nombres de otros pujadores.
 
 Uso:
-  python fb_subastas.py --login        abre Chrome para iniciar sesión en Facebook (una vez)
+  python fb_subastas.py --login        abre Brave para iniciar sesión en Facebook (una vez)
   python fb_subastas.py --instalar     crea la tarea de Windows (cada 5 min)
   python fb_subastas.py --desinstalar  la quita
   python fb_subastas.py --todas        lee ahora todas las subastas abiertas
   python fb_subastas.py                lo que hace la tarea: lee solo las que tocan
 """
 import datetime as dt
+import os
 import random
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import notificar
 import scanner
 import subastas
 from scanner import BASE, log
 
-PERFIL = BASE / "data" / "fb-perfil"
+PERFIL = BASE / "data" / "fb-perfil-brave"
+# Brave, nunca Chrome. Se puede cambiar con la variable BRAVE_EXE.
+BRAVE = os.environ.get("BRAVE_EXE") or next(
+    (str(p) for p in (Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "BraveSoftware/Brave-Browser/Application/brave.exe",
+                      Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")) / "BraveSoftware/Brave-Browser/Application/brave.exe",
+                      Path(os.environ.get("LOCALAPPDATA", "")) / "BraveSoftware/Brave-Browser/Application/brave.exe")
+     if p.is_file()), None)
 TAREA = "TCG Subastas Facebook"
 CADA_NORMAL = 40          # minutos entre lecturas de una subasta
 CADA_FINAL = 10           # en su última hora
@@ -141,23 +149,39 @@ def procesar(sid, motivo, lectura):
 
 
 def _abrir(p, headless=True):
+    if not BRAVE:
+        raise SystemExit("No encuentro Brave (brave.exe). Instálalo o pon su ruta en la variable BRAVE_EXE.")
     PERFIL.mkdir(parents=True, exist_ok=True)
-    return p.chromium.launch_persistent_context(
-        str(PERFIL), channel="chrome", headless=headless, locale="es-PE", timezone_id="America/Lima",
-        viewport={"width": 1280, "height": 900}, args=["--disable-blink-features=AutomationControlled"])
+    opciones = dict(executable_path=BRAVE, headless=headless, locale="es-PE", timezone_id="America/Lima",
+                    viewport={"width": 1280, "height": 900}, args=["--disable-blink-features=AutomationControlled"])
+    ctx = p.chromium.launch_persistent_context(str(PERFIL), **opciones)
+    ua = ctx.pages[0].evaluate("navigator.userAgent") if ctx.pages else ""
+    if "Headless" in ua:   # sin ventana se presenta como "HeadlessChrome": se usa el mismo de Brave con ventana
+        ctx.close()
+        ctx = p.chromium.launch_persistent_context(str(PERFIL), user_agent=ua.replace("HeadlessChrome", "Chrome"),
+                                                   **opciones)
+    return ctx
 
 
 def login():
-    """Abre Chrome (perfil aparte) en Facebook para que TÚ inicies sesión. Se cierra al cerrar la ventana."""
+    """Abre Brave (perfil aparte) en Facebook para que TÚ inicies sesión. Se cierra al cerrar la ventana."""
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         ctx = _abrir(p, headless=False)
         pagina = ctx.pages[0] if ctx.pages else ctx.new_page()
         pagina.goto("https://www.facebook.com/")
-        print("Inicia sesión en la ventana de Chrome que se abrió y luego ciérrala.")
-        while ctx.pages:
-            time.sleep(1)
-        ctx.close()
+        pagina.bring_to_front()
+        print("Inicia sesión en la ventana de Brave que se abrió y luego ciérrala.", flush=True)
+        cerrado = []
+        ctx.on("close", lambda _: cerrado.append(1))
+        try:
+            while ctx.pages and not cerrado:
+                pagina.wait_for_timeout(1000) if not pagina.is_closed() else time.sleep(1)
+            if not cerrado:
+                ctx.close()
+        except Exception:  # noqa: BLE001 - cerraste la ventana: es lo esperado
+            pass
+        print("Sesión guardada.", flush=True)
 
 
 def correr(todas=False):

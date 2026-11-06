@@ -118,10 +118,10 @@ publica la página en GitHub Pages. Para escanear al momento: pestaña **Actions
 ## Subastas de Facebook sin Claude
 
 `fb_subastas.py` **solo lee** los comentarios de tus subastas (nunca comenta, puja ni reacciona) con
-un Chrome aparte (perfil en `data/fb-perfil`, tu sesión de Facebook nunca sale de la PC):
+Brave con un perfil aparte (`data/fb-perfil-brave`; nunca Chrome; tu sesión de Facebook nunca sale de la PC):
 
-1. `pip install -r requirements-pc.txt` (usa tu Chrome instalado; no descarga otro navegador).
-2. Doble clic en **`Facebook - iniciar sesion.bat`**: inicias sesión tú en la ventana que se abre, la
+1. `pip install -r requirements-pc.txt` (usa tu Brave instalado; no descarga otro navegador).
+2. Doble clic en **`Facebook - iniciar sesion.bat`**: inicias sesión tú en la ventana de Brave que se abre, la
    cierras y crea la tarea de Windows *TCG Subastas Facebook* (cada 5 min; quitarla:
    `python fb_subastas.py --desinstalar`).
 

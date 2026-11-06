@@ -1,10 +1,10 @@
 @echo off
-rem Abre un Chrome aparte para iniciar sesion en Facebook (solo la primera vez o si vence).
-rem Ese Chrome lo usa la tarea "TCG Subastas Facebook" para LEER las pujas de tus subastas.
+rem Abre Brave (perfil aparte) para iniciar sesion en Facebook (solo la primera vez o si vence).
+rem Ese perfil lo usa la tarea "TCG Subastas Facebook" para LEER las pujas de tus subastas.
 chcp 65001 >nul
 cd /d "%~dp0"
 title Facebook - iniciar sesion
-echo Se abrira una ventana de Chrome en Facebook.
+echo Se abrira una ventana de Brave en Facebook.
 echo Inicia sesion ahi (con tu usuario y clave) y luego CIERRA esa ventana.
 echo.
 python fb_subastas.py --login
