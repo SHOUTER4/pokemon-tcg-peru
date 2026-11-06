@@ -9,7 +9,8 @@ cada 5 minutos, pero solo abre Facebook cuando toca:
   - ~10 minutos antes del cierre (y te avisa al celular: puja, si es tuya y el tope);
   - 2 minutos después del cierre (lectura final: ganada o perdida).
 
-Si alguien supera tu puja también te avisa. Las pujas se anotan en la app y en la web como
+Si alguien supera tu puja o sube la puja de alguna carta también te avisa (varias subidas en la
+misma pasada llegan juntas en un solo aviso). Las pujas se anotan en la app y en la web como
 siempre (subastas.marcar), sin nombres de otros pujadores.
 
 Uso:
@@ -99,8 +100,24 @@ def _soles(x):
     return f"S/ {x:g}" if x is not None else "—"
 
 
+def _sin_consola():
+    """El driver de Playwright (node.exe) es de consola: con pythonw Windows le abría una ventana
+    negra por un segundo. Se le agrega CREATE_NO_WINDOW."""
+    import asyncio
+    if os.name != "nt" or getattr(asyncio.create_subprocess_exec, "_sin_consola", False):
+        return
+    original = asyncio.create_subprocess_exec
+
+    async def sin_ventana(*args, **kw):
+        kw["creationflags"] = kw.get("creationflags", 0) | subprocess.CREATE_NO_WINDOW
+        return await original(*args, **kw)
+    sin_ventana._sin_consola = True
+    asyncio.create_subprocess_exec = sin_ventana
+
+
 def procesar(sid, motivo, lectura):
-    """Anota lo leído en la subasta y manda los avisos que correspondan."""
+    """Anota lo leído en la subasta y manda los avisos que correspondan. Devuelve la subida de
+    puja (para juntarlas en un aviso) si subió y no te superaron ni es tuya."""
     prefs = scanner.cargar_prefs()
     s = prefs["subastas"].get(sid)
     if not s:
@@ -112,7 +129,9 @@ def procesar(sid, motivo, lectura):
     maximo = max((c["monto"] for c in montos), default=None)
     mio = max((c["monto"] for c in montos if yo and c["autor"] == yo), default=None)
     titulo, tope = s["titulo"], (round(s["mercado_pen"] * subastas.TOPE) if s.get("mercado_pen") else None)
-    if maximo and maximo > (s.get("puja_actual") or 0):
+    antes = s.get("puja_actual") or 0
+    subida = None
+    if maximo and maximo > antes:
         subastas.marcar(prefs, sid, puja_actual=maximo)
         prefs = scanner.cargar_prefs()
         s = prefs["subastas"][sid]
@@ -131,6 +150,9 @@ def procesar(sid, motivo, lectura):
         s["fb_superado"] = maximo
         notificar.enviar(f"Te superaron: {titulo}", f"Va en {_soles(maximo)}; tu puja {_soles(mio)}{nota_tope}.",
                          s["url"], etiqueta=sid)
+    elif motivo == "normal" and antes and maximo and maximo > antes and not s["fb_va_ganando"]:
+        subida = {"id": sid, "titulo": titulo, "antes": antes, "ahora": maximo, "url": s["url"],
+                  "tope": tope, "pujaste": bool(mio)}
 
     if motivo == "final":
         s["fb_final"] = True
@@ -146,6 +168,29 @@ def procesar(sid, motivo, lectura):
         notificar.enviar(f"Cerró: {titulo}", texto, s["url"], etiqueta=sid)
     scanner.guardar_prefs(prefs)
     log.info("Facebook %s (%s): máx %s, tuya %s", titulo, motivo, maximo, mio)
+    return subida
+
+
+def _corto(titulo):
+    return titulo.split(" (")[0]
+
+
+def avisar_subidas(subidas):
+    """Un solo aviso al celular por pasada con todas las pujas que subieron."""
+    if not subidas:
+        return
+    if len(subidas) == 1:
+        x = subidas[0]
+        pasa = " (pasó tu tope)" if x["tope"] and x["ahora"] > x["tope"] else ""
+        notificar.enviar(f"Subió la puja: {x['titulo']}",
+                         f"De {_soles(x['antes'])} a {_soles(x['ahora'])}"
+                         + (f" · tope {_soles(x['tope'])}{pasa}" if x["tope"] else "") + ".",
+                         x["url"], windows=False, respaldo_pc=False, etiqueta=x["id"])
+        return
+    lineas = [f"{_corto(x['titulo'])}: {_soles(x['antes'])} → {_soles(x['ahora'])}"
+              + (" (pasó el tope)" if x["tope"] and x["ahora"] > x["tope"] else "") for x in subidas]
+    notificar.enviar(f"Subieron {len(subidas)} pujas", "\n".join(lineas), notificar.SITIO + "#subastas",
+                     windows=False, respaldo_pc=False, etiqueta="subidas")
 
 
 def _abrir(p, headless=True):
@@ -166,6 +211,7 @@ def _abrir(p, headless=True):
 def login():
     """Abre Brave (perfil aparte) en Facebook para que TÚ inicies sesión. Se cierra al cerrar la ventana."""
     from playwright.sync_api import sync_playwright
+    _sin_consola()
     with sync_playwright() as p:
         ctx = _abrir(p, headless=False)
         pagina = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -191,6 +237,8 @@ def correr(todas=False):
     if not tareas:
         return
     from playwright.sync_api import sync_playwright
+    _sin_consola()
+    subidas = []
     with sync_playwright() as p:
         ctx = _abrir(p)
         pagina = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -205,10 +253,13 @@ def correr(todas=False):
                 if lectura["login"]:
                     _sesion_vencida(prefs)
                     return
-                procesar(s["id"], motivo, lectura)
+                subida = procesar(s["id"], motivo, lectura)
+                if subida:
+                    subidas.append(subida)
                 time.sleep(random.uniform(4, 9))   # sin prisa: parecer una persona
         finally:
             ctx.close()
+            avisar_subidas(subidas)
     subastas.publicar(scanner.cargar_prefs(), esperar=True)
 
 

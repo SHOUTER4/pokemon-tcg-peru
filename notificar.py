@@ -19,6 +19,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 from scanner import BASE, log
 
@@ -128,19 +129,24 @@ def recoger():
     return nuevas
 
 
+def pythonw():
+    """pythonw.exe junto al Python actual: corre scripts sin abrir consola."""
+    w = Path(sys.executable).with_name("pythonw.exe")
+    return str(w if w.exists() else sys.executable)
+
+
 def _windows(titulo, cuerpo, url):
-    """Ventana con sonido en la PC (no bloquea: la abre otro proceso)."""
+    """Ventana con sonido en la PC (no bloquea: la abre otro proceso, sin consola)."""
     if os.name != "nt":
         return
-    script = BASE / "recordatorio.ps1"
-    args = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", str(script),
-            "-Titulo", titulo, "-Mensaje", cuerpo] + (["-Url", url] if url else [])
+    args = [pythonw(), str(BASE / "recordatorio.py"), "--titulo", titulo, "--mensaje", cuerpo] + (
+        ["--url", url] if url else [])
     subprocess.Popen(args, creationflags=SIN_VENTANA)
 
 
-def enviar(titulo, cuerpo, url=None, windows=True, etiqueta=None):
-    """Aviso a cada celular suscrito; si no hay ninguno (o windows=True) también en la PC.
-    Devuelve cuántos celulares lo recibieron."""
+def enviar(titulo, cuerpo, url=None, windows=True, etiqueta=None, respaldo_pc=True):
+    """Aviso a cada celular suscrito; con windows=True también en la PC, y si ningún celular lo
+    recibió, en la PC salvo respaldo_pc=False. Devuelve cuántos celulares lo recibieron."""
     from pywebpush import WebPushException, webpush
 
     log.info("Aviso: %s — %s", titulo, cuerpo)
@@ -165,7 +171,7 @@ def enviar(titulo, cuerpo, url=None, windows=True, etiqueta=None):
             vivas.append(s)
     if len(vivas) != len(suscripciones()):
         _guardar_suscripciones(vivas)
-    if windows or not ok:
+    if windows or (not ok and respaldo_pc):
         _windows(titulo, cuerpo, url)
     return ok
 

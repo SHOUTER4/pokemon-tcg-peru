@@ -60,8 +60,8 @@ mientras la usas. Solo es accesible desde tu PC.
   regresiva, hasta cuánto conviene pujar (80% del valor de mercado) y si ya pasaron tu máximo.
   Antes del cierre (1 h, 30, 10 o 3 min, a elegir) Windows muestra una ventana con sonido para
   abrir la subasta, aunque la app esté cerrada: son tareas "TCG Subasta …" del Programador de
-  tareas que ejecutan `recordatorio.ps1` (la PC debe estar prendida y con tu sesión abierta).
-  Facebook no deja leer publicaciones sin iniciar sesión, así que la puja actual la anotas tú.
+  tareas que ejecutan `recordatorio.py` con `pythonw` (sin abrir consola; la PC debe estar prendida
+  y con tu sesión abierta). La puja de Facebook la lee `fb_subastas.py` (ver abajo).
 - **Catálogo**: todo con buscador y filtros ("Solo gradeadas" muestra las cartas PSA, CGC, AGS…, con su nota). Al tocar un producto se ve su historial de
   precio, el precio en otras tiendas y se puede guardar en favoritos.
 - **Favoritos**: precio objetivo por producto; la app (y Telegram) avisan cuando un
@@ -127,7 +127,9 @@ Brave con un perfil aparte (`data/fb-perfil-brave`; nunca Chrome; tu sesión de 
 
 La tarea abre Facebook solo cuando toca: cada ~40 min por subasta, cada ~10 min en su última hora,
 ~10 min antes del cierre y 2 min después (lectura final: marca ganada/perdida). Anota la puja más
-alta (sin nombres de otros pujadores) y te avisa si te superan, faltando ~10 min y al cerrar.
+alta (sin nombres de otros pujadores) y te avisa si te superan, si sube la puja
+de alguna carta (varias subidas de la misma pasada llegan en un solo aviso), faltando ~10 min y al cerrar.
+Nada de esto abre ventanas de consola: todo corre con `pythonw` y `CREATE_NO_WINDOW`.
 Si la sesión vence, avisa para volver a correr el `.bat`. Log: `data/escaneo.log`.
 
 **Avisos al celular** (`notificar.py`, Web Push): en la web instalada, sección Subastas →

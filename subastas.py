@@ -3,7 +3,7 @@
 Facebook no deja leer publicaciones sin iniciar sesión, así que el link, la hora de
 cierre y la puja actual los anotas tú en la app. La app guarda el valor de la carta
 en TCGplayer para decirte hasta cuánto conviene pujar, y programa avisos en Windows
-(tareas "TCG Subasta …" que muestran recordatorio.ps1 con sonido) aunque la app esté cerrada.
+(tareas "TCG Subasta …" que muestran recordatorio.py con sonido, sin consola) aunque la app esté cerrada.
 
 Cada cambio se publica (sin tu máximo) en subastas.json de la rama "subastas" del
 repositorio, que la versión web lee al abrirse y cada 2 minutos.
@@ -271,7 +271,8 @@ def programar_avisos(s):
     ahora = dt.datetime.now()
     horas = [] if s.get("resultado") else [
         (m, cierre - dt.timedelta(minutes=m)) for m in s.get("avisos", []) if cierre - dt.timedelta(minutes=m) > ahora]
-    script = BASE / "recordatorio.ps1"
+    from notificar import pythonw
+    exe, script = pythonw(), BASE / "recordatorio.py"
     lineas = [f"Get-ScheduledTask -TaskName '{PREFIJO_TAREA} {s['id']} *' -ErrorAction SilentlyContinue | "
               "Unregister-ScheduledTask -Confirm:$false"]
     for m, cuando in horas:
@@ -280,14 +281,14 @@ def programar_avisos(s):
             mensaje += f" Ultima puja anotada: S/ {s['puja_actual']:g}."
         if s.get("mi_maximo"):
             mensaje += f" Tu maximo: S/ {s['mi_maximo']:g}."
-        args = (f'-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "{script}" '
-                f'-Titulo "Subasta Pokemon - faltan {m} min" -Mensaje "{mensaje}" -Url "{_ascii(s["url"])}"')
+        args = (f'"{script}" --titulo "Subasta Pokemon - faltan {m} min" --mensaje "{mensaje}" '
+                f'--url "{_ascii(s["url"])}"')
         lineas.append(
             f"$t = New-ScheduledTaskTrigger -Once -At ([datetime]'{cuando:%Y-%m-%dT%H:%M:%S}'); "
             f"$t.EndBoundary = '{cierre + dt.timedelta(minutes=5):%Y-%m-%dT%H:%M:%S}'; "
             f"Register-ScheduledTask -TaskName '{PREFIJO_TAREA} {s['id']} {m:02d}m' -Force "
             f"-Description 'Aviso de subasta: {_ascii(s['titulo'])}' "
-            f"-Action (New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '{args}') -Trigger $t "
+            f"-Action (New-ScheduledTaskAction -Execute '{exe}' -Argument '{args}') -Trigger $t "
             "-Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries "
             "-WakeToRun -DeleteExpiredTaskAfter (New-TimeSpan -Hours 1)) | Out-Null")
     r = _powershell("; ".join(lineas))
@@ -323,7 +324,8 @@ def publicas(prefs):
 
 
 def _repo():
-    r = subprocess.run(["git", "-C", str(BASE), "remote", "get-url", "origin"], capture_output=True, text=True)
+    r = subprocess.run(["git", "-C", str(BASE), "remote", "get-url", "origin"], capture_output=True, text=True,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     m = re.search(r"github\.com[:/]([^/]+/[^/.]+)", r.stdout)
     return m.group(1) if m else None
 
