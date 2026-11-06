@@ -98,6 +98,8 @@ h3 .count, h2 .count { font-size: 13px; font-weight: 500; color: var(--muted); }
 a.kpi:hover { border-color: var(--primary); }
 .kpi .label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 500; }
 .kpi .value { font-size: 28px; font-weight: 600; line-height: 1.2; margin-top: 4px; }
+.kpi .nota { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.sub-total { margin: 0 0 14px; }
 .kpi.pos .label .ic { color: var(--pos); } .kpi.neg .label .ic { color: var(--neg); } .kpi.acc .label .ic { color: var(--accent); }
 
 .banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 16px; border-radius: var(--radius); background: var(--pos-bg); color: var(--pos); font-weight: 500; text-decoration: none; border: 1px solid transparent; }
@@ -519,6 +521,7 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
     </form>
     <div>
       <h3 id="sub-h3">Mis subastas <span class="count" id="sub-count"></span></h3>
+      <div class="kpis sub-total" id="sub-total"></div>
       <div class="cartas" id="sub-list"></div>
     </div>
   </section>
@@ -1355,6 +1358,25 @@ function subastaCard(s) {
     </div>` : ''}
   </article>`;
 }
+function totalSubastas() {
+  // Cuánto pagarías si ganas todas las abiertas: a la puja de ahora y llegando al tope en cada una.
+  const abiertas = activas(), ganadas = D.subastas.filter(s => s.resultado === 'ganada');
+  if (!abiertas.length && !ganadas.length) return '';
+  const suma = (xs, f) => xs.reduce((t, s) => t + (f(s) || 0), 0);
+  const aPuja = suma(abiertas, s => s.puja_actual);
+  const aTope = suma(abiertas, s => Math.max(s.puja_actual || 0, s.tope ?? s.puja_actual ?? 0));
+  const mercado = suma(abiertas, s => s.mercado_pen), sinRef = abiertas.filter(s => !s.mercado_pen).length;
+  const yaGanadas = suma(ganadas, s => s.puja_actual);
+  const caja = (label, value, ic, tone, nota) => `<div class="kpi ${tone}"><div class="label">${icon(ic)}${label}</div>
+    <div class="value num">${value}</div>${nota ? `<div class="nota">${nota}</div>` : ''}</div>`;
+  return [
+    abiertas.length ? caja('Si ganas todas ahora', soles(aPuja), 'gavel', '', `${abiertas.length} subasta${abiertas.length === 1 ? '' : 's'} abierta${abiertas.length === 1 ? '' : 's'}, a la puja actual`) : '',
+    abiertas.length ? caja('Si llegas al tope en todas', soles(aTope), 'alert', 'neg', 'Lo máximo que pagarías respetando los topes') : '',
+    APP && abiertas.some(s => s.mi_maximo) ? caja('Con tus máximos', soles(suma(abiertas, s => s.mi_maximo || Math.max(s.puja_actual || 0, s.tope ?? 0))), 'scale', 'acc', 'Tu máximo donde lo pusiste; si no, el tope') : '',
+    abiertas.length && mercado ? caja('Valen en TCGplayer', soles(mercado), 'down', 'pos', `Ahorro a la puja actual: ${soles(mercado - aPuja)}${sinRef ? ` · ${sinRef} sin precio` : ''}`) : '',
+    ganadas.length ? caja('Ya ganadas', soles(yaGanadas), 'check', 'pos', `${ganadas.length} por pagar o recoger`) : '',
+  ].join('');
+}
 function renderSubastas() {
   $('#sub-form').hidden = !APP;
   if (WEB) {
@@ -1363,6 +1385,7 @@ function renderSubastas() {
   }
   const n = activas().length;
   $('#sub-count').textContent = D.subastas.length ? `(${n} activa${n === 1 ? '' : 's'})` : '';
+  $('#sub-total').innerHTML = totalSubastas();
   $('#sub-list').innerHTML = D.subastas.length ? D.subastas.map(subastaCard).join('')
     : `<div class="empty">${icon('gavel')}<strong>${WEB ? 'No hay subastas por ahora' : 'No tienes subastas anotadas'}</strong>${APP ? 'Pega arriba el link de la subasta, la hora de cierre y la carta.' : WEB ? (SUB_WEB_TS ? '' : 'Cargando…') : 'Abre la app para anotar subastas.'}</div>`;
 }
