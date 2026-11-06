@@ -519,6 +519,11 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 16px 40px; border-t
         <button class="btn ghost" type="button" id="sub-cancelar" hidden>Cancelar edición</button>
       </div>
     </form>
+    <section class="panel avisos-web" id="avisos-web" hidden aria-labelledby="avisos-h">
+      <h3 id="avisos-h">Avisos en el celular</h3>
+      <p class="hint" id="avisos-txt"></p>
+      <div class="sub-actions" id="avisos-acc"></div>
+    </section>
     <div>
       <h3 id="sub-h3">Mis subastas <span class="count" id="sub-count"></span></h3>
       <div class="kpis sub-total" id="sub-total"></div>
@@ -697,7 +702,93 @@ async function cargar() {
   preparar();
   renderTodo();
   if (WEB && D.repo) { cargarSubastasWeb(); setInterval(cargarSubastasWeb, 120e3); cargarBusquedasWeb(true); }
+  pwa();
 }
+
+/* ---------------- Web instalable (PWA) y avisos al celular ----------------
+   La web publicada se puede instalar desde el navegador (sin APK). Para los avisos, el
+   celular se suscribe y manda su suscripción CIFRADA (solo la PC puede leerla) en un issue
+   "Avisos: …"; la PC la guarda y desde ahí te avisa: te superaron, faltan ~10 min, cerró. */
+let INSTALAR = null;
+const instalada = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const soportaPush = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const guardado = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (_) { return null; } };
+function pwa() {
+  if (!WEB) return;
+  for (const [rel, href] of [['manifest', 'manifest.webmanifest'], ['apple-touch-icon', 'apple-touch-icon.png'], ['icon', 'icono-192.png']]) {
+    const l = document.createElement('link'); l.rel = rel; l.href = href; document.head.append(l);
+  }
+  const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#1e40af'; document.head.append(m);
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALAR = e; renderAvisosWeb(); });
+  addEventListener('appinstalled', () => { INSTALAR = null; renderAvisosWeb(); });
+  // Al volver a la app (p. ej. después de confirmar en GitHub) se refresca el estado.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('#avisos-acc a')) renderAvisosWeb(); });
+  const pintar = () => renderAvisosWeb();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(pintar, pintar);
+  else pintar();
+}
+async function renderAvisosWeb(pedido = null) {   // pedido: link del issue ya preparado
+  const caja = $('#avisos-web');
+  caja.hidden = !WEB || !D.push || !D.repo;
+  if (caja.hidden) return;
+  const txt = $('#avisos-txt'), acc = $('#avisos-acc');
+  const botonInstalar = INSTALAR ? `<button class="btn" type="button" id="av-instalar">${icon('plus')}Instalar app</button>` : '';
+  let sub = null;
+  if (soportaPush() && Notification.permission === 'granted') {
+    try { sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); } catch (_) {}
+  }
+  if (pedido) {
+    txt.innerHTML = 'Listo. Toca <b>Confirmar en GitHub</b> y luego «Create». La PC lo activará en unos 5 minutos y te llegará un aviso de prueba.';
+    acc.innerHTML = `<a class="btn primary" href="${esc(pedido)}" target="_blank" rel="noopener">${icon('ext')}Confirmar en GitHub</a>`;
+  } else if (esIOS && !instalada()) {
+    txt.textContent = 'En iPhone primero instálala: toca Compartir → «Agregar a inicio», ábrela desde el ícono y vuelve aquí para activar los avisos.';
+    acc.innerHTML = '';
+  } else if (!soportaPush()) {
+    txt.textContent = 'Este navegador no permite avisos. Usa Chrome en Android (o Safari con la app instalada en iPhone).';
+    acc.innerHTML = botonInstalar;
+  } else if (Notification.permission === 'denied') {
+    txt.textContent = 'Bloqueaste las notificaciones de esta página: actívalas en los ajustes del navegador y recarga.';
+    acc.innerHTML = botonInstalar;
+  } else if (sub && guardado('tcg-avisos') === sub.endpoint) {
+    txt.textContent = 'Avisos activos en este dispositivo: te aviso si te superan, ~10 minutos antes del cierre y cuando cierra. (Los manda tu PC: tiene que estar prendida.)';
+    acc.innerHTML = `${botonInstalar}<button class="btn ghost small" type="button" id="av-activar">Volver a enviar</button>`;
+  } else {
+    txt.textContent = instalada() || INSTALAR
+      ? 'Recibe avisos de tus subastas aunque la app esté cerrada: si te superan, ~10 min antes del cierre y cuando cierra.'
+      : 'Instálala desde el menú del navegador («Instalar app» o «Agregar a pantalla de inicio») y activa los avisos de tus subastas.';
+    acc.innerHTML = `${botonInstalar}<button class="btn primary" type="button" id="av-activar">${icon('bell')}Activar avisos</button>`;
+  }
+}
+const b64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0));
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+async function cifrarParaPC(texto) {
+  // AES-GCM para el texto y RSA-OAEP (llave pública de la PC) para la llave AES.
+  const rsa = await crypto.subtle.importKey('spki', Uint8Array.from(atob(D.push.rsa), c => c.charCodeAt(0)),
+    { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  const aes = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aes, new TextEncoder().encode(texto));
+  const k = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, rsa, await crypto.subtle.exportKey('raw', aes));
+  return btoa(JSON.stringify({ k: b64(k), iv: b64(iv), c: b64(c) }));
+}
+async function activarAvisos() {
+  if (await Notification.requestPermission() !== 'granted') return renderAvisosWeb();
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription()
+    || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(D.push.vapid) });
+  const equipo = /android/i.test(navigator.userAgent) ? 'Android' : esIOS ? 'iPhone' : 'PC';
+  const cuerpo = 'Pedido de avisos desde la web (cifrado: solo tu PC puede leerlo). Dale a "Create"; tu PC lo procesa y lo cierra.\n\n```\n'
+    + await cifrarParaPC(JSON.stringify(sub.toJSON())) + '\n```';
+  guardado('tcg-avisos', sub.endpoint);
+  renderAvisosWeb(urlPedido(`Avisos: ${equipo} ${new Date().toLocaleDateString('es-PE')}`, cuerpo));
+}
+document.addEventListener('click', async e => {
+  if (e.target.closest('#av-instalar') && INSTALAR) { INSTALAR.prompt(); await INSTALAR.userChoice; INSTALAR = null; renderAvisosWeb(); }
+  if (e.target.closest('#av-activar')) {
+    try { await activarAvisos(); } catch (ex) { toast(`No se pudo activar: ${ex.message}`); }
+  }
+});
 // Versión web: las subastas (sin datos personales) vienen de subastas.json en la rama
 // "subastas", que la app publica cada vez que anotas una puja. Se leen con la API de GitHub
 // porque se actualiza al minuto (raw.githubusercontent tarda hasta 5).
@@ -1147,9 +1238,10 @@ function renderCartas() {
 /* ---- Buscar una carta: en la app responde al instante; en la web va por el buzón de GitHub
    (un issue que procesa el workflow "Buzón" y deja el resultado en la rama "busquedas"). ---- */
 const BUZON = () => WEB && !!D.repo;
+const urlPedido = (titulo, cuerpo = 'Pedido desde la web. Solo dale a "Create" (o "Submit new issue"): el workflow Buzón lo procesa, responde aquí y lo cierra solo.') =>
+  `https://github.com/${D.repo}/issues/new?title=${encodeURIComponent(titulo)}&body=${encodeURIComponent(cuerpo)}`;
 function pedidoGithub(titulo) {
-  const cuerpo = 'Pedido desde la web. Solo dale a "Create" (o "Submit new issue"): el workflow Buzón lo procesa, responde aquí y lo cierra solo.';
-  window.open(`https://github.com/${D.repo}/issues/new?title=${encodeURIComponent(titulo)}&body=${encodeURIComponent(cuerpo)}`, '_blank', 'noopener');
+  window.open(urlPedido(titulo), '_blank', 'noopener');
 }
 const yaSigo = id => D.cartas.some(c => c.id === id);
 function resultadoCard(v) {
@@ -1380,7 +1472,7 @@ function totalSubastas() {
 function renderSubastas() {
   $('#sub-form').hidden = !APP;
   if (WEB) {
-    $('#sub-lead').textContent = 'Subastas que estoy siguiendo (Facebook, grupos…). La puja se actualiza cuando la anoto, no en tiempo real: ábrela para ver lo último.';
+    $('#sub-lead').textContent = 'Subastas que estoy siguiendo (Facebook, grupos…). La puja se lee sola cada ~40 minutos (cada ~10 en su última hora) mientras la PC esté prendida: ábrela para ver lo último al instante.';
     $('#sub-h3').firstChild.textContent = 'Subastas ';
   }
   const n = activas().length;

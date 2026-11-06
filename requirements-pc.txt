@@ -1,0 +1,5 @@
+# Solo en la PC (no en GitHub Actions): lectura de subastas de Facebook y avisos al celular.
+-r requirements.txt
+playwright>=1.45
+pywebpush>=2.0
+cryptography>=42

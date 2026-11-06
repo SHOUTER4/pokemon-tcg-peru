@@ -109,8 +109,34 @@ publica la página en GitHub Pages. Para escanear al momento: pestaña **Actions
   en subastas (`scanner.py --web` usa `datos_publicos`). Los favoritos que marques ahí quedan solo en tu navegador.
 - **Subastas en la web**: cada vez que guardas una subasta o anotas una puja en la app, se publica
   `subastas.json` (sin tu máximo ni avisos) en la rama `subastas` usando tu sesión del `gh` CLI. La página
-  lo lee al abrirse y cada 2 minutos, con la cuenta regresiva y el historial de pujas. No es en tiempo real:
-  la puja es la última que anotaste (Facebook no deja leerla automáticamente).
+  lo lee al abrirse y cada 2 minutos, con la cuenta regresiva y el historial de pujas. Las pujas de
+  Facebook se leen solas desde la PC (ver *Subastas de Facebook sin Claude*).
+- **Instalable en el celular (PWA)**: ábrela en Chrome (Android) → menú → *Instalar app*, o en
+  Safari (iPhone) → Compartir → *Agregar a inicio*. No es un APK. Los archivos están en `web/`
+  (manifest, `sw.js`, íconos) y `scanner.py --web` los copia junto a `index.html`.
+
+## Subastas de Facebook sin Claude
+
+`fb_subastas.py` **solo lee** los comentarios de tus subastas (nunca comenta, puja ni reacciona) con
+un Chrome aparte (perfil en `data/fb-perfil`, tu sesión de Facebook nunca sale de la PC):
+
+1. `pip install -r requirements-pc.txt` (usa tu Chrome instalado; no descarga otro navegador).
+2. Doble clic en **`Facebook - iniciar sesion.bat`**: inicias sesión tú en la ventana que se abre, la
+   cierras y crea la tarea de Windows *TCG Subastas Facebook* (cada 5 min; quitarla:
+   `python fb_subastas.py --desinstalar`).
+
+La tarea abre Facebook solo cuando toca: cada ~40 min por subasta, cada ~10 min en su última hora,
+~10 min antes del cierre y 2 min después (lectura final: marca ganada/perdida). Anota la puja más
+alta (sin nombres de otros pujadores) y te avisa si te superan, faltando ~10 min y al cerrar.
+Si la sesión vence, avisa para volver a correr el `.bat`. Log: `data/escaneo.log`.
+
+**Avisos al celular** (`notificar.py`, Web Push): en la web instalada, sección Subastas →
+*Activar avisos* → *Confirmar en GitHub*. El celular manda su suscripción **cifrada** (RSA-OAEP +
+AES-GCM; solo la PC la descifra) en un issue `Avisos: …`; la tarea la guarda en `data/push.json`,
+cierra el issue y manda un aviso de prueba. Las llaves privadas (`data/vapid_privada.pem`,
+`data/buzon_privada.pem`) no salen de la PC; las públicas están en `web/push.json`
+(`python notificar.py --claves` las crea). Sin celular suscrito, los avisos salen en Windows.
+Los avisos los manda la PC: tiene que estar prendida.
 - Sigue las cartas listadas en `cartas:` de `tiendas.yaml`.
 - El historial de precios vive en la rama `datos` (un solo commit con `tcg.db`).
 - `data/` y `reportes/` no se suben (ver `.gitignore`).

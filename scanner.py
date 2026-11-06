@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import sqlite3
 import sys
 import time
@@ -773,7 +774,11 @@ def datos_publicos(datos):
     """Copia de los datos sin lo personal (favoritos, subastas, precios objetivo) para la web.
     Las subastas las lee la página en vivo desde la rama "subastas" del repositorio ("repo")."""
     prefs = datos["prefs"]
-    return {**datos, "telegram": False, "subastas": [], "repo": os.environ.get("GITHUB_REPOSITORY"),
+    try:   # llaves PÚBLICAS para suscribirse a los avisos (las privadas solo están en la PC)
+        push = json.loads((BASE / "web" / "push.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        push = None
+    return {**datos, "telegram": False, "subastas": [], "repo": os.environ.get("GITHUB_REPOSITORY"), "push": push,
             "cartas": [{**c, "objetivo": None} for c in datos["cartas"]],
             "prefs": {"vigilar": prefs.get("vigilar", []), "favoritos": {}, "pausadas": [],
                       "cartas": {}, "subastas": {}}}
@@ -788,6 +793,10 @@ def generar_reporte(db, ts, web=None):
     if web:
         Path(web).mkdir(parents=True, exist_ok=True)
         (Path(web) / "index.html").write_text(pagina_ui(datos_publicos(datos), "web"), encoding="utf-8")
+        # Archivos de la web instalable (PWA): manifest, service worker de avisos e íconos.
+        for f in (BASE / "web").glob("*"):
+            if f.is_file():
+                shutil.copy2(f, Path(web) / f.name)
     with open(REPORTES / f"productos_{fecha}.csv", "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(["tienda", "nombre", "precio", "precio_normal", "stock", "idioma", "url", "visto_desde"])
