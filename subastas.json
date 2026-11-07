@@ -1,0 +1,600 @@
+{
+ "actualizado": "2026-11-06T23:00:55",
+ "subastas": [
+  {
+   "id": "8cfba779",
+   "titulo": "Regigigas VSTAR 233/172 SAR (Animercadope)",
+   "url": "https://www.facebook.com/photo/?fbid=122155153047129708",
+   "cierre": "2026-11-04T22:00:59",
+   "puja_actual": 44.0,
+   "pujas": [
+    {
+     "ts": "2026-11-04T00:35:49",
+     "monto": 6
+    },
+    {
+     "ts": "2026-11-04T01:30:49",
+     "monto": 7
+    },
+    {
+     "ts": "2026-11-04T01:40:49",
+     "monto": 8
+    },
+    {
+     "ts": "2026-11-04T02:35:49",
+     "monto": 9
+    },
+    {
+     "ts": "2026-11-04T09:35:49",
+     "monto": 10
+    },
+    {
+     "ts": "2026-11-04T10:35:49",
+     "monto": 11
+    },
+    {
+     "ts": "2026-11-04T12:37:49",
+     "monto": 12
+    },
+    {
+     "ts": "2026-11-04T14:01:38",
+     "monto": 13.0
+    },
+    {
+     "ts": "2026-11-04T14:41:34",
+     "monto": 17.0
+    },
+    {
+     "ts": "2026-11-04T15:41:39",
+     "monto": 20.0
+    },
+    {
+     "ts": "2026-11-04T16:11:34",
+     "monto": 21.0
+    },
+    {
+     "ts": "2026-11-04T18:11:36",
+     "monto": 22.0
+    },
+    {
+     "ts": "2026-11-04T18:41:45",
+     "monto": 23.0
+    },
+    {
+     "ts": "2026-11-04T19:41:38",
+     "monto": 24.0
+    },
+    {
+     "ts": "2026-11-04T20:11:37",
+     "monto": 31.0
+    },
+    {
+     "ts": "2026-11-04T20:11:37",
+     "monto": 34.0
+    },
+    {
+     "ts": "2026-11-04T21:11:37",
+     "monto": 35.0
+    },
+    {
+     "ts": "2026-11-04T21:11:37",
+     "monto": 39.0
+    },
+    {
+     "ts": "2026-11-04T21:41:38",
+     "monto": 40.0
+    },
+    {
+     "ts": "2026-11-04T21:41:38",
+     "monto": 42.0
+    },
+    {
+     "ts": "2026-11-04T22:13:08",
+     "monto": 44.0
+    }
+   ],
+   "resultado": "perdida",
+   "tcg_nombre": "Regigigas VSTAR - 233/172",
+   "tcg_set": "S12a: VSTAR Universe",
+   "tcg_url": "https://www.tcgplayer.com/product/571771",
+   "mercado_usd": 14.91,
+   "mercado_pen": 51.66,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/571771_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 41
+  },
+  {
+   "id": "cb401494",
+   "titulo": "Dhelmise 088/081 AR (Fuecoco Market)",
+   "url": "https://www.facebook.com/photo/?fbid=122201576930924100",
+   "cierre": "2026-11-05T22:35:59",
+   "puja_actual": 7.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T17:17:02",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-05T21:17:40",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-05T21:46:21",
+     "monto": 6.0
+    },
+    {
+     "ts": "2026-11-05T22:48:51",
+     "monto": 7.0
+    }
+   ],
+   "resultado": "ganada",
+   "tcg_nombre": "Dhelmise - 088/081",
+   "tcg_set": "M5: Abyss Eye",
+   "tcg_url": "https://www.tcgplayer.com/product/695039",
+   "mercado_usd": 1.67,
+   "mercado_pen": 5.76,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/695039_in_400x400.jpg",
+   "ms_precio": 12.0,
+   "ms_url": "https://www.masterset.pe/card/a327db8b-3117-482b-87bd-f03f43371eb8",
+   "ms_ofertas": 1,
+   "ms_detalle": "Dhelmise 088/081 · M5: Abyss Eye",
+   "lote": null,
+   "tope": 5
+  },
+  {
+   "id": "d4ed1686",
+   "titulo": "Kyogre 080/076 AR + Groudon 084/076 AR (Only Full Arts)",
+   "url": "https://www.facebook.com/photo/?fbid=122156735511022686",
+   "cierre": "2026-11-06T21:02:59",
+   "puja_actual": 51.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T22:47:27",
+     "monto": 15.0
+    },
+    {
+     "ts": "2026-11-05T22:51:43",
+     "monto": 16
+    },
+    {
+     "ts": "2026-11-05T22:55:43",
+     "monto": 20
+    },
+    {
+     "ts": "2026-11-05T23:22:50",
+     "monto": 30.0
+    },
+    {
+     "ts": "2026-11-05T23:32:41",
+     "monto": 31
+    },
+    {
+     "ts": "2026-11-05T23:52:41",
+     "monto": 32.0
+    },
+    {
+     "ts": "2026-11-06T02:52:39",
+     "monto": 34.0
+    },
+    {
+     "ts": "2026-11-06T09:04:18",
+     "monto": 35.0
+    },
+    {
+     "ts": "2026-11-06T10:46:33",
+     "monto": 36.0
+    },
+    {
+     "ts": "2026-11-06T12:20:35",
+     "monto": 38.0
+    },
+    {
+     "ts": "2026-11-06T15:00:48",
+     "monto": 40.0
+    },
+    {
+     "ts": "2026-11-06T17:05:55",
+     "monto": 42.0
+    },
+    {
+     "ts": "2026-11-06T18:30:42",
+     "monto": 50.0
+    },
+    {
+     "ts": "2026-11-06T21:10:51",
+     "monto": 51.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Kyogre - 080/076 + Groudon - 084/076",
+   "tcg_set": "M6: Storm Emeralda",
+   "tcg_url": "https://www.tcgplayer.com/product/709233",
+   "mercado_usd": 16.33,
+   "mercado_pen": 56.33,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709233_in_400x400.jpg",
+   "ms_precio": 73.0,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": [
+    {
+     "tcgplayer_id": "709233",
+     "tcg_nombre": "Kyogre - 080/076",
+     "tcg_set": "M6: Storm Emeralda",
+     "tcg_url": "https://www.tcgplayer.com/product/709233",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 7.59,
+     "mercado_pen": 26.18,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709233_in_400x400.jpg",
+     "ms_precio": 38.0,
+     "ms_url": "https://www.masterset.pe/card/a2dbcd5f-d74d-4c73-80a4-39660814adf5",
+     "ms_ofertas": 1,
+     "ms_detalle": "Kyogre 080/076 · M6: Storm Emeralda",
+     "ms_ts": "2026-11-05T22:47:33"
+    },
+    {
+     "tcgplayer_id": "709237",
+     "tcg_nombre": "Groudon - 084/076",
+     "tcg_set": "M6: Storm Emeralda",
+     "tcg_url": "https://www.tcgplayer.com/product/709237",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 8.74,
+     "mercado_pen": 30.15,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709237_in_400x400.jpg",
+     "ms_precio": 35.0,
+     "ms_url": "https://www.masterset.pe/card/a2d5b130-ea7d-4f03-8c04-1d45e3ca2ab9",
+     "ms_ofertas": 3,
+     "ms_detalle": "Groudon 084/076 · M6: Storm Emeralda",
+     "ms_ts": "2026-11-05T22:47:39"
+    }
+   ],
+   "tope": 45
+  },
+  {
+   "id": "43ca6d5e",
+   "titulo": "Kecleon 088/076 AR + Kecleon 118/106 AR (Only Full Arts)",
+   "url": "https://www.facebook.com/photo/?fbid=122156735637022686",
+   "cierre": "2026-11-06T21:03:59",
+   "puja_actual": 40.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T22:47:42",
+     "monto": 15.0
+    },
+    {
+     "ts": "2026-11-05T23:22:54",
+     "monto": 20.0
+    },
+    {
+     "ts": "2026-11-06T02:22:37",
+     "monto": 21.0
+    },
+    {
+     "ts": "2026-11-06T09:04:22",
+     "monto": 22.0
+    },
+    {
+     "ts": "2026-11-06T10:22:13",
+     "monto": 25.0
+    },
+    {
+     "ts": "2026-11-06T17:35:42",
+     "monto": 26.0
+    },
+    {
+     "ts": "2026-11-06T18:20:52",
+     "monto": 32.0
+    },
+    {
+     "ts": "2026-11-06T21:01:02",
+     "monto": 35.0
+    },
+    {
+     "ts": "2026-11-06T21:11:12",
+     "monto": 40.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Kecleon - 088/076 + Kecleon - 118/106",
+   "tcg_set": "M6: Storm Emeralda / SV8: Super Electric Breaker",
+   "tcg_url": "https://www.tcgplayer.com/product/709241",
+   "mercado_usd": 10.49,
+   "mercado_pen": 36.18,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709241_in_400x400.jpg",
+   "ms_precio": 42.0,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": [
+    {
+     "tcgplayer_id": "709241",
+     "tcg_nombre": "Kecleon - 088/076",
+     "tcg_set": "M6: Storm Emeralda",
+     "tcg_url": "https://www.tcgplayer.com/product/709241",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 7.35,
+     "mercado_pen": 25.35,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709241_in_400x400.jpg",
+     "ms_precio": 30.0,
+     "ms_url": "https://www.masterset.pe/card/a303e498-b549-4928-841e-38fd17f26763",
+     "ms_ofertas": 2,
+     "ms_detalle": "Kecleon 088/076 · M6: Storm Emeralda",
+     "ms_ts": "2026-11-05T22:47:48"
+    },
+    {
+     "tcgplayer_id": "587693",
+     "tcg_nombre": "Kecleon - 118/106",
+     "tcg_set": "SV8: Super Electric Breaker",
+     "tcg_url": "https://www.tcgplayer.com/product/587693",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 3.14,
+     "mercado_pen": 10.83,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/587693_in_400x400.jpg",
+     "ms_precio": 12.0,
+     "ms_url": "https://www.masterset.pe/card/a3124286-fe06-40b2-8868-fbe089dd10d8",
+     "ms_ofertas": 1,
+     "ms_detalle": "Kecleon 118/106 · SV8: Super Electric Breaker",
+     "ms_ts": "2026-11-05T22:47:51"
+    }
+   ],
+   "tope": 29
+  },
+  {
+   "id": "16e55c29",
+   "titulo": "Bulbasaur 064/063 AR + Ivysaur 065/063 AR (Only Full Arts)",
+   "url": "https://www.facebook.com/photo/?fbid=122156735763022686",
+   "cierre": "2026-11-06T21:06:59",
+   "puja_actual": 43.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T22:47:54",
+     "monto": 11.0
+    },
+    {
+     "ts": "2026-11-05T22:53:43",
+     "monto": 12
+    },
+    {
+     "ts": "2026-11-05T22:57:43",
+     "monto": 18
+    },
+    {
+     "ts": "2026-11-05T23:22:58",
+     "monto": 19.0
+    },
+    {
+     "ts": "2026-11-05T23:52:49",
+     "monto": 20.0
+    },
+    {
+     "ts": "2026-11-06T02:22:43",
+     "monto": 25.0
+    },
+    {
+     "ts": "2026-11-06T02:52:43",
+     "monto": 26.0
+    },
+    {
+     "ts": "2026-11-06T09:04:26",
+     "monto": 28.0
+    },
+    {
+     "ts": "2026-11-06T10:22:16",
+     "monto": 30.0
+    },
+    {
+     "ts": "2026-11-06T19:50:46",
+     "monto": 31.0
+    },
+    {
+     "ts": "2026-11-06T21:11:33",
+     "monto": 43.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Bulbasaur - 064/063 + Ivysaur - 065/063",
+   "tcg_set": "m1L: Mega Brave",
+   "tcg_url": "https://www.tcgplayer.com/product/647173",
+   "mercado_usd": 9.39,
+   "mercado_pen": 32.39,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/647173_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": "Falta en MasterSet: Ivysaur - 065/063",
+   "lote": [
+    {
+     "tcgplayer_id": "647173",
+     "tcg_nombre": "Bulbasaur - 064/063",
+     "tcg_set": "m1L: Mega Brave",
+     "tcg_url": "https://www.tcgplayer.com/product/647173",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 4.81,
+     "mercado_pen": 16.59,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/647173_in_400x400.jpg",
+     "ms_precio": 28.0,
+     "ms_url": "https://www.masterset.pe/card/a2b2b446-c873-4b9b-95e1-0c4c6e9632b2",
+     "ms_ofertas": 1,
+     "ms_detalle": "Bulbasaur 064/063 · m1L: Mega Brave",
+     "ms_ts": "2026-11-05T22:47:57"
+    },
+    {
+     "tcgplayer_id": "647174",
+     "tcg_nombre": "Ivysaur - 065/063",
+     "tcg_set": "m1L: Mega Brave",
+     "tcg_url": "https://www.tcgplayer.com/product/647174",
+     "tcg_linea": "Pokemon Japan",
+     "mercado_usd": 4.58,
+     "mercado_pen": 15.8,
+     "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/647174_in_400x400.jpg",
+     "ms_precio": null,
+     "ms_url": null,
+     "ms_ofertas": null,
+     "ms_detalle": null,
+     "ms_ts": "2026-11-05T22:48:00"
+    }
+   ],
+   "tope": 26
+  },
+  {
+   "id": "3ca1a662",
+   "titulo": "Drifloon 111/103 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122129973699468026",
+   "cierre": "2026-11-06T21:46:59",
+   "puja_actual": 7.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T17:03:35",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-05T22:16:25",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-06T21:41:13",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-06T21:50:57",
+     "monto": 7.0
+    }
+   ],
+   "resultado": "perdida",
+   "tcg_nombre": "Drifloon - 111/103",
+   "tcg_set": "M6a: MEGA Expansion 30th Celebration",
+   "tcg_url": "https://www.tcgplayer.com/product/716913",
+   "mercado_usd": 3.68,
+   "mercado_pen": 12.69,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/716913_in_400x400.jpg",
+   "ms_precio": 14.0,
+   "ms_url": "https://www.masterset.pe/card/a2ff9681-8af3-4bd4-b418-f01dda9f596e",
+   "ms_ofertas": 1,
+   "ms_detalle": "Drifloon 111/103 · M6a: MEGA Expansion 30th Celebration",
+   "lote": null,
+   "tope": 10
+  },
+  {
+   "id": "66378873",
+   "titulo": "Ninjask 065/063 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122129973531468026",
+   "cierre": "2026-11-06T21:52:59",
+   "puja_actual": 11.0,
+   "pujas": [
+    {
+     "ts": "2026-11-05T17:16:58",
+     "monto": 6.0
+    },
+    {
+     "ts": "2026-11-05T23:22:43",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-06T18:20:33",
+     "monto": 8.0
+    },
+    {
+     "ts": "2026-11-06T21:00:14",
+     "monto": 9.0
+    },
+    {
+     "ts": "2026-11-06T22:00:38",
+     "monto": 11.0
+    }
+   ],
+   "resultado": "perdida",
+   "tcg_nombre": "Ninjask - 065/063",
+   "tcg_set": "m1S: Mega Symphonia",
+   "tcg_url": "https://www.tcgplayer.com/product/647228",
+   "mercado_usd": 1.87,
+   "mercado_pen": 6.45,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/647228_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 5
+  },
+  {
+   "id": "fd79825a",
+   "titulo": "Yamask 119/086 AR (Fuecoco Market)",
+   "url": "https://www.facebook.com/photo/?fbid=122201767526924100",
+   "cierre": "2026-11-06T22:42:59",
+   "puja_actual": 15.0,
+   "pujas": [
+    {
+     "ts": "2026-11-06T09:53:30",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-06T11:31:43",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-06T21:45:56",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-06T22:57:35",
+     "monto": 15.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Yamask - 119/086",
+   "tcg_set": "SV11W: White Flare",
+   "tcg_url": "https://www.tcgplayer.com/product/636672",
+   "mercado_usd": 4.93,
+   "mercado_pen": 17.0,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/636672_in_400x400.jpg",
+   "ms_precio": 14.0,
+   "ms_url": "https://www.masterset.pe/card/a2bb1827-4389-4578-a0a7-d2ccbb8e0e2d",
+   "ms_ofertas": 1,
+   "ms_detalle": "Yamask 119/086 · SV11W: White Flare",
+   "lote": null,
+   "tope": 14
+  },
+  {
+   "id": "4aa397ac",
+   "titulo": "Chimecho 106/101 AR (Fuecoco Market)",
+   "url": "https://www.facebook.com/photo/?fbid=122201768816924100",
+   "cierre": "2026-11-06T22:56:59",
+   "puja_actual": 8.0,
+   "pujas": [
+    {
+     "ts": "2026-11-06T09:53:50",
+     "monto": 2.0
+    },
+    {
+     "ts": "2026-11-06T11:32:24",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-06T22:19:56",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-06T22:58:02",
+     "monto": 8.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Chimecho - 106/101",
+   "tcg_set": "SV6: Transformation Mask",
+   "tcg_url": "https://www.tcgplayer.com/product/568096",
+   "mercado_usd": 2.19,
+   "mercado_pen": 7.55,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/568096_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 6
+  }
+ ]
+}
