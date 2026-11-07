@@ -21,8 +21,10 @@ Uso:
   python fb_subastas.py                lo que hace la tarea: lee solo las que tocan
 """
 import datetime as dt
+import json
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -230,9 +232,35 @@ def login():
         print("Sesión guardada.", flush=True)
 
 
+def soltar_pedidos():
+    """Quita las subastas que soltaste desde la web (issues "Soltar: <id> …" del dueño del repo)."""
+    try:
+        dueno = json.loads(notificar._gh("repo", "view", "--json", "owner"))["owner"]["login"]
+        issues = json.loads(notificar._gh("issue", "list", "--state", "open", "--author", dueno, "--search",
+                                          "Soltar: in:title", "--json", "number,title", "--limit", "30"))
+    except Exception as ex:  # noqa: BLE001 - sin internet o sin gh: se intenta en la próxima
+        log.warning("No pude revisar los pedidos para soltar subastas: %s", ex)
+        return 0
+    quitadas = 0
+    for i in issues:
+        m = re.match(r"Soltar:\s*([0-9a-f]{8})\b", i["title"])
+        if not m:
+            continue
+        prefs = scanner.cargar_prefs()
+        s = prefs.get("subastas", {}).get(m.group(1))
+        if s:
+            subastas.quitar(prefs, s["id"])
+            quitadas += 1
+            log.info("Subasta soltada desde la web: %s", s["titulo"])
+        notificar._gh("issue", "close", str(i["number"]), "--comment",
+                      f"Listo: ya no sigo «{s['titulo']}»." if s else "Esa subasta ya no estaba en la lista.")
+    return quitadas
+
+
 def correr(todas=False):
-    prefs = scanner.cargar_prefs()
     notificar.recoger()
+    soltar_pedidos()
+    prefs = scanner.cargar_prefs()
     tareas = pendientes(prefs, todas)
     if not tareas:
         return

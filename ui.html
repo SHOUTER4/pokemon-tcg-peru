@@ -1447,6 +1447,9 @@ function subastaCard(s) {
       <button class="btn small ghost" type="button" data-sub-edit="${esc(s.id)}">Editar</button>
       ${s.tcg_url ? `<a class="btn small ghost" href="${esc(s.tcg_url)}" target="_blank" rel="noopener">${icon('ext')}TCGplayer</a>` : ''}
       <button class="icon-btn" type="button" data-sub-del="${esc(s.id)}" aria-label="Quitar ${esc(s.titulo)}" title="Quitar">${icon('close')}</button>
+    </div>` : BUZON() && !cerrada ? `<div class="acts">
+      <a class="btn small primary" href="${esc(s.url)}" target="_blank" rel="noopener">${icon('ext')}Abrir subasta</a>
+      <button class="btn small ghost" type="button" data-sub-soltar="${esc(s.id)}">${icon('close')}Ya no me interesa</button>
     </div>` : ''}
   </article>`;
 }
@@ -1469,8 +1472,22 @@ function totalSubastas() {
     ganadas.length ? caja('Ya ganadas', soles(yaGanadas), 'check', 'pos', `${ganadas.length} por pagar o recoger`) : '',
   ].join('');
 }
+// Subastas que soltaste desde la web: se ocultan al momento; la PC las quita del todo (pedido "Soltar:").
+const SOLTADAS = 'tcg-soltadas';
+const soltadas = () => { try { return new Set(JSON.parse(localStorage.getItem(SOLTADAS) || '[]')); } catch { return new Set(); } };
+function soltar(id) {
+  const s = D.subastas.find(x => x.id === id); if (!s) return;
+  if (!confirm(`¿Dejar de seguir «${s.titulo}»? Se quita de la lista y ya no te llegarán avisos de ella.`)) return;
+  window.open(urlPedido(`Soltar: ${id} ${s.titulo}`.slice(0, 120),
+    'Pedido desde la web. Solo dale a "Create": la PC quita esta subasta en unos minutos (cuando esté prendida) y cierra el pedido sola. No toca Facebook.'),
+    '_blank', 'noopener');
+  try { localStorage.setItem(SOLTADAS, JSON.stringify([...soltadas(), id].slice(-100))); } catch { /* sin almacenamiento: igual se quita en la PC */ }
+  renderSubastas();
+  toast('Dale a Create en GitHub: la subasta se quita en unos minutos');
+}
 function renderSubastas() {
   $('#sub-form').hidden = !APP;
+  if (WEB) { const fuera = soltadas(); D.subastas = D.subastas.filter(s => !fuera.has(s.id)); }
   if (WEB) {
     $('#sub-lead').textContent = 'Subastas que estoy siguiendo (Facebook, grupos…). La puja se lee sola cada ~40 minutos (cada ~10 en su última hora) mientras la PC esté prendida: ábrela para ver lo último al instante.';
     $('#sub-h3').firstChild.textContent = 'Subastas ';
@@ -1561,6 +1578,8 @@ $('#sub-list').addEventListener('submit', async e => {
 });
 $('#sub-list').addEventListener('click', async e => {
   const res = e.target.closest('[data-sub-res]'), del = e.target.closest('[data-sub-del]'), ed = e.target.closest('[data-sub-edit]');
+  const sol = e.target.closest('[data-sub-soltar]');
+  if (sol) { soltar(sol.dataset.subSoltar); return; }
   try {
     if (res) { await accionSubasta({ accion: 'resultado', id: res.dataset.id, resultado: res.dataset.subRes }); toast(res.dataset.subRes === 'ganada' ? '¡Felicitaciones!' : 'Anotado'); }
     if (del && confirm('¿Quitar esta subasta y sus avisos?')) { await accionSubasta({ accion: 'quitar', id: del.dataset.subDel }); toast('Subasta quitada'); }
