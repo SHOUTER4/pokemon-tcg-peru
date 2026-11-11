@@ -47,6 +47,7 @@ CADA_NORMAL = 40          # minutos entre lecturas de una subasta
 CADA_FINAL = 10           # en su última hora
 AVISO_ANTES = 11          # minutos antes del cierre: aviso "faltan ~10 min"
 FINAL_TRAS = 2            # minutos después del cierre: lectura final
+AVISAR_SUBIDAS = False    # avisar al celular cuando sube la puja de una carta (apagado: era mucho ruido)
 
 LEER_JS = r"""
 async () => {
@@ -152,7 +153,7 @@ def procesar(sid, motivo, lectura):
         s["fb_superado"] = maximo
         notificar.enviar(f"Te superaron: {titulo}", f"Va en {_soles(maximo)}; tu puja {_soles(mio)}{nota_tope}.",
                          s["url"], etiqueta=sid)
-    elif motivo == "normal" and antes and maximo and maximo > antes and not s["fb_va_ganando"]:
+    elif AVISAR_SUBIDAS and motivo == "normal" and antes and maximo and maximo > antes and not s["fb_va_ganando"]:
         subida = {"id": sid, "titulo": titulo, "antes": antes, "ahora": maximo, "url": s["url"],
                   "tope": tope, "pujaste": bool(mio)}
 
