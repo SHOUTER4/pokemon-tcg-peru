@@ -1,0 +1,551 @@
+{
+ "actualizado": "2026-11-11T21:21:03",
+ "subastas": [
+  {
+   "id": "27a2557d",
+   "titulo": "Groudon 084/076 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo?fbid=122131172157468026",
+   "cierre": "2026-11-10T21:32:59",
+   "puja_actual": 19.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:03:57",
+     "monto": 14.0
+    },
+    {
+     "ts": "2026-11-10T01:46:58",
+     "monto": 15.0
+    },
+    {
+     "ts": "2026-11-10T13:55:22",
+     "monto": 16.0
+    },
+    {
+     "ts": "2026-11-10T21:34:57",
+     "monto": 19.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Groudon - 084/076",
+   "tcg_set": "M6: Storm Emeralda",
+   "tcg_url": "https://www.tcgplayer.com/product/709237",
+   "mercado_usd": 5.95,
+   "mercado_pen": 20.36,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/709237_in_400x400.jpg",
+   "ms_precio": 35.0,
+   "ms_url": "https://www.masterset.pe/card/a2d5b130-ea7d-4f03-8c04-1d45e3ca2ab9",
+   "ms_ofertas": 4,
+   "ms_detalle": "Groudon 084/076 · M6: Storm Emeralda",
+   "lote": null,
+   "tope": 16
+  },
+  {
+   "id": "03484d4d",
+   "titulo": "Cutiefly 078/071 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131172853468026",
+   "cierre": "2026-11-10T21:42:59",
+   "puja_actual": 10.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:02:35",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-10T11:50:12",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-10T13:50:16",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-10T21:16:02",
+     "monto": 6.0
+    },
+    {
+     "ts": "2026-11-10T21:40:05",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-10T21:50:30",
+     "monto": 10.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Cutiefly - 078/071",
+   "tcg_set": "SV5M: Cyber Judge",
+   "tcg_url": "https://www.tcgplayer.com/product/566229",
+   "mercado_usd": 2.83,
+   "mercado_pen": 9.68,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/566229_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 8
+  },
+  {
+   "id": "59efc32e",
+   "titulo": "Chandelure 112/103 AR 30th (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131172031468026",
+   "cierre": "2026-11-10T21:46:59",
+   "puja_actual": 5.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:02:56",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-10T09:46:20",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-10T21:31:02",
+     "monto": 5.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Chandelure - 112/103",
+   "tcg_set": "M6a: MEGA Expansion 30th Celebration",
+   "tcg_url": "https://www.tcgplayer.com/product/716914",
+   "mercado_usd": 1.53,
+   "mercado_pen": 5.23,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/716914_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 4
+  },
+  {
+   "id": "752c2fe5",
+   "titulo": "Dreepy 211/193 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131172679468026",
+   "cierre": "2026-11-10T22:00:59",
+   "puja_actual": 5.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:03:08",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-10T13:50:46",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-10T21:46:24",
+     "monto": 5.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Dreepy - 211/193",
+   "tcg_set": "M2a: High Class Pack: MEGA Dream ex",
+   "tcg_url": "https://www.tcgplayer.com/product/665882",
+   "mercado_usd": 1.41,
+   "mercado_pen": 4.82,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/665882_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 4
+  },
+  {
+   "id": "5e93949f",
+   "titulo": "Dhelmise 088/081 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131171977468026",
+   "cierre": "2026-11-10T22:04:59",
+   "puja_actual": 6.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:03:23",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-10T20:10:09",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-10T21:32:20",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-10T22:11:09",
+     "monto": 6.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Dhelmise - 088/081",
+   "tcg_set": "M5: Abyss Eye",
+   "tcg_url": "https://www.tcgplayer.com/product/695039",
+   "mercado_usd": 1.68,
+   "mercado_pen": 5.75,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/695039_in_400x400.jpg",
+   "ms_precio": 8.0,
+   "ms_url": "https://www.masterset.pe/card/a327db8b-3117-482b-87bd-f03f43371eb8",
+   "ms_ofertas": 2,
+   "ms_detalle": "Dhelmise 088/081 · M5: Abyss Eye",
+   "lote": null,
+   "tope": 5
+  },
+  {
+   "id": "535b119f",
+   "titulo": "Stufful 075/063 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131172253468026",
+   "cierre": "2026-11-10T22:10:59",
+   "puja_actual": 8.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:03:35",
+     "monto": 5.0
+    },
+    {
+     "ts": "2026-11-10T13:54:55",
+     "monto": 6.0
+    },
+    {
+     "ts": "2026-11-10T20:51:08",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-10T22:15:10",
+     "monto": 8.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Stufful - 075/063",
+   "tcg_set": "m1S: Mega Symphonia",
+   "tcg_url": "https://www.tcgplayer.com/product/647292",
+   "mercado_usd": 2.83,
+   "mercado_pen": 9.68,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/647292_in_400x400.jpg",
+   "ms_precio": 14.0,
+   "ms_url": "https://www.masterset.pe/card/a2ef121e-df8c-4605-a15b-19bd10f3346f",
+   "ms_ofertas": 1,
+   "ms_detalle": "Stufful 075/063 · m1S: Mega Symphonia",
+   "lote": null,
+   "tope": 8
+  },
+  {
+   "id": "beba932c",
+   "titulo": "Altaria 194/172 AR (Carden TCG)",
+   "url": "https://www.facebook.com/photo/?fbid=122131172583468026",
+   "cierre": "2026-11-10T22:16:59",
+   "puja_actual": 18.0,
+   "pujas": [
+    {
+     "ts": "2026-11-10T01:03:46",
+     "monto": 13.0
+    },
+    {
+     "ts": "2026-11-10T11:55:14",
+     "monto": 14.0
+    },
+    {
+     "ts": "2026-11-10T20:11:18",
+     "monto": 16.0
+    },
+    {
+     "ts": "2026-11-10T22:00:54",
+     "monto": 17.0
+    },
+    {
+     "ts": "2026-11-10T22:11:36",
+     "monto": 18.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Altaria - 194/172",
+   "tcg_set": "S12a: VSTAR Universe",
+   "tcg_url": "https://www.tcgplayer.com/product/571732",
+   "mercado_usd": 5.41,
+   "mercado_pen": 18.51,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/571732_in_400x400.jpg",
+   "ms_precio": 25.0,
+   "ms_url": "https://www.masterset.pe/card/a2c5caec-b788-4c88-a4a2-05cb85789f98",
+   "ms_ofertas": 4,
+   "ms_detalle": "Altaria 194/172 · S12a: VSTAR Universe",
+   "lote": null,
+   "tope": 15
+  },
+  {
+   "id": "4e462b92",
+   "titulo": "Scramble Energy WC 2005 Yoneda (Holoclub #05)",
+   "url": "https://www.facebook.com/photo?fbid=122129600127467879",
+   "cierre": "2026-11-10T23:05:59",
+   "puja_actual": 11.0,
+   "pujas": [
+    {
+     "ts": "2026-11-09T00:43:21",
+     "monto": 2.0
+    },
+    {
+     "ts": "2026-11-09T08:25:04",
+     "monto": 6.0
+    },
+    {
+     "ts": "2026-11-09T22:55:05",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-10T02:14:59",
+     "monto": 8.0
+    },
+    {
+     "ts": "2026-11-10T18:25:29",
+     "monto": 10.0
+    },
+    {
+     "ts": "2026-11-10T21:45:42",
+     "monto": 11.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Scramble Energy - 2005 (Takashi Yoneda)",
+   "tcg_set": "World Championship Decks",
+   "tcg_url": "https://www.tcgplayer.com/product/477583",
+   "mercado_usd": 1.25,
+   "mercado_pen": 4.31,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/477583_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 3
+  },
+  {
+   "id": "c8e4bdbb",
+   "titulo": "Booster Prismatic Evolutions (Holoclub #15)",
+   "url": "https://www.facebook.com/photo/?fbid=122129600835467879",
+   "cierre": "2026-11-10T23:15:59",
+   "puja_actual": 32.0,
+   "pujas": [
+    {
+     "ts": "2026-11-09T00:43:44",
+     "monto": 18.0
+    },
+    {
+     "ts": "2026-11-09T08:25:33",
+     "monto": 22.0
+    },
+    {
+     "ts": "2026-11-09T14:54:56",
+     "monto": 23.0
+    },
+    {
+     "ts": "2026-11-09T16:14:57",
+     "monto": 24.0
+    },
+    {
+     "ts": "2026-11-10T01:05:01",
+     "monto": 25.0
+    },
+    {
+     "ts": "2026-11-10T02:25:03",
+     "monto": 26.0
+    },
+    {
+     "ts": "2026-11-10T14:25:16",
+     "monto": 29.0
+    },
+    {
+     "ts": "2026-11-10T18:25:58",
+     "monto": 31.0
+    },
+    {
+     "ts": "2026-11-10T23:20:11",
+     "monto": 32.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Prismatic Evolutions Booster Pack",
+   "tcg_set": "SV: Prismatic Evolutions",
+   "tcg_url": "https://www.tcgplayer.com/product/593294",
+   "mercado_usd": 13.63,
+   "mercado_pen": 46.95,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/593294_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 38
+  },
+  {
+   "id": "1ca3761f",
+   "titulo": "Booster Destined Rivals (Holoclub #17)",
+   "url": "https://www.facebook.com/photo/?fbid=122129600217467879",
+   "cierre": "2026-11-10T23:17:59",
+   "puja_actual": 27.0,
+   "pujas": [
+    {
+     "ts": "2026-11-09T00:43:52",
+     "monto": 13.0
+    },
+    {
+     "ts": "2026-11-09T08:25:50",
+     "monto": 16.0
+    },
+    {
+     "ts": "2026-11-09T15:14:57",
+     "monto": 17.0
+    },
+    {
+     "ts": "2026-11-10T18:26:25",
+     "monto": 23.0
+    },
+    {
+     "ts": "2026-11-10T23:25:10",
+     "monto": 27.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Destined Rivals Booster Pack",
+   "tcg_set": "SV10: Destined Rivals",
+   "tcg_url": "https://www.tcgplayer.com/product/624683",
+   "mercado_usd": 8.49,
+   "mercado_pen": 29.25,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/624683_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 23
+  },
+  {
+   "id": "56df5fbe",
+   "titulo": "Slowbro 43/62 Fossil LP + sleeve (Holoclub #19)",
+   "url": "https://www.facebook.com/photo/?fbid=122129601309467879",
+   "cierre": "2026-11-10T23:19:59",
+   "puja_actual": 16.0,
+   "pujas": [
+    {
+     "ts": "2026-11-09T00:43:58",
+     "monto": 4.0
+    },
+    {
+     "ts": "2026-11-09T08:26:08",
+     "monto": 7.0
+    },
+    {
+     "ts": "2026-11-09T16:20:01",
+     "monto": 8.0
+    },
+    {
+     "ts": "2026-11-10T02:25:26",
+     "monto": 10.0
+    },
+    {
+     "ts": "2026-11-10T15:06:22",
+     "monto": 12.0
+    },
+    {
+     "ts": "2026-11-10T22:10:22",
+     "monto": 15.0
+    },
+    {
+     "ts": "2026-11-10T23:05:33",
+     "monto": 16.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Slowbro",
+   "tcg_set": "Fossil",
+   "tcg_url": "https://www.tcgplayer.com/product/44445",
+   "mercado_usd": 9.33,
+   "mercado_pen": 32.14,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/44445_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 26
+  },
+  {
+   "id": "1d18464b",
+   "titulo": "Onix 65/115 Unseen Forces + sleeve (Holoclub #29)",
+   "url": "https://www.facebook.com/photo/?fbid=122129600301467879",
+   "cierre": "2026-11-10T23:29:59",
+   "puja_actual": 7.0,
+   "pujas": [
+    {
+     "ts": "2026-11-09T00:44:10",
+     "monto": 1.0
+    },
+    {
+     "ts": "2026-11-09T08:26:22",
+     "monto": 2.0
+    },
+    {
+     "ts": "2026-11-09T23:03:11",
+     "monto": 3.0
+    },
+    {
+     "ts": "2026-11-10T22:10:46",
+     "monto": 7.0
+    }
+   ],
+   "resultado": "perdida",
+   "tcg_nombre": "Onix",
+   "tcg_set": "EX Unseen Forces",
+   "tcg_url": "https://www.tcgplayer.com/product/87881",
+   "mercado_usd": 0.91,
+   "mercado_pen": 3.13,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/87881_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 3
+  },
+  {
+   "id": "782ef52d",
+   "titulo": "Pikachu VMAX 046/184 RRR s8b (Only Full Arts)",
+   "url": "https://www.facebook.com/photo/?fbid=122157252255022686",
+   "cierre": "2026-11-11T21:15:59",
+   "puja_actual": 18.0,
+   "pujas": [
+    {
+     "ts": "2026-11-11T00:45:19",
+     "monto": 10.0
+    },
+    {
+     "ts": "2026-11-11T09:00:20",
+     "monto": 12.0
+    },
+    {
+     "ts": "2026-11-11T09:47:24",
+     "monto": 13.0
+    },
+    {
+     "ts": "2026-11-11T20:49:59",
+     "monto": 14.0
+    },
+    {
+     "ts": "2026-11-11T21:20:55",
+     "monto": 18.0
+    }
+   ],
+   "resultado": null,
+   "tcg_nombre": "Pikachu VMAX - 046/184",
+   "tcg_set": "S8b: VMAX Climax",
+   "tcg_url": "https://www.tcgplayer.com/product/571299",
+   "mercado_usd": 6.58,
+   "mercado_pen": 22.47,
+   "imagen": "https://tcgplayer-cdn.tcgplayer.com/product/571299_in_400x400.jpg",
+   "ms_precio": null,
+   "ms_url": null,
+   "ms_ofertas": null,
+   "ms_detalle": null,
+   "lote": null,
+   "tope": 18
+  }
+ ]
+}
